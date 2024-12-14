@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+aiofiles
+pydantic
+# 其他依賴
