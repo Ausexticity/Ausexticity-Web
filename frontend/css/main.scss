@@ -1,0 +1,21 @@
+//Vendor CSS
+@import url("vendor/reset.css");
+@import url('https://fonts.googleapis.com/css2?family=Alatsi&family=Roboto&family=DM+Mono:wght@400;500&family=Inter&family=Noto+Sans+TC:wght@200;300;400;500;600;700;900&display=swap');
+
+// Global CSS
+@import "abstracts/define";
+@import "abstracts/global";
+
+// LAYOUT CSS
+@import "layout/header";
+@import "layout/footer";
+//@import "layout/radio_checkbox";
+//@import "layout/button";
+//@import "layout/form";
+//@import "layout/dialog";
+
+//@import "layout/dropdown";
+
+// Pages CSS
+@import "pages/home";
+@import "pages/detail";

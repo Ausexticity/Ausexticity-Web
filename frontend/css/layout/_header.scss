@@ -1,0 +1,121 @@
+header{
+    position: relative;
+    .header-div{
+        padding: 30px 0;
+        .outer-div{
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1130px;
+            margin: 0 auto;
+            padding: 0 20px;
+            .brand{
+                a{
+                    display: inline-flex;
+                    align-items: center;
+                    img{
+                        &:nth-child(1){
+                            margin-right: 15px;
+                        }
+                    }
+                }
+            }
+            .links{
+                a{
+                    display: inline-block;
+                    font-family: $fontAlatsi;
+                    color: $colorDarkGray;
+                    background-image: url(./../images/header_dot.svg);
+                    background-repeat: no-repeat;
+                    font-size: 24px;
+                    padding-left: 15px;
+                }
+            }
+        }
+    }
+   
+}
+
+.scroll{
+    header{
+       
+    }    
+}
+main { 
+    position: relative;
+}
+@media all and (max-width: 1390px) {
+   
+}
+@media all and (max-width: 1280px) {
+   
+}
+
+@media all and (max-width: 1200px) {
+   
+}
+@media all and (max-width: 992px) {
+    header{
+        .header-div{
+            padding: 15px 0;
+            .outer-div{
+                .brand{
+                    a{
+                        img{
+                            &:nth-child(1){
+                                height: 48px;
+                                margin-right: 5px;
+                            }
+                            &:nth-child(2){
+                                height: 20px;
+                            }
+                        }
+                    } 
+                }
+                .links{
+                    a{
+                        font-size: 18px;
+                        background-size: auto 100%;
+                    }
+                } 
+            } 
+        } 
+    } 
+    .body-detail{
+        header{
+            .header-div{
+                .outer-div{
+                    .brand{
+                        a{
+                            img{
+                                &:nth-child(1){
+                                    height: 20px;
+                                    margin-right: 0px;
+                                }
+                            }
+                        } 
+                    } 
+                } 
+            } 
+        } 
+    }
+    
+}
+
+
+@media all and (max-width: 640px) {    
+    header{
+        .header-div{
+            .outer-div{
+                .links{
+                    a{
+                        font-size: 13px;
+                        background-size: auto 100%;
+                        padding-left: 8px;
+                    }
+                }   
+            } 
+        } 
+    } 
+}
