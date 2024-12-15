@@ -14,60 +14,72 @@ if (!firebase.apps.length) {
 const authFirebase = firebase.auth();
 
 // 定義 API 的基礎 URL
-const API_BASE_URL = 'http://localhost:8000';
+// const API_BASE_URL = 'http://localhost:8000';
 
-// 登入函式
-async function login(username, password) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || '登入失敗');
-        }
-
-        const data = await response.json();
-        const token = data.token;
-
-        await authFirebase.signInWithCustomToken(token);
-        alert('登入成功！');
-        window.location.href = 'index.html';
-    } catch (error) {
-        console.error('錯誤:', error);
-        alert(error.message || '登入時發生錯誤');
-    }
-}
-
-// 註冊函式
 async function signup(username, password) {
     try {
         const response = await fetch(`${API_BASE_URL}/api/signup`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({
+                username: username,
+                password: password
+            }),
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || '註冊失敗');
+        const data = await response.json();
+
+        if (response.status === 200) {
+            // 註冊成功，儲存 token
+            localStorage.setItem('token', data.token);
+            return true;
+        } else {
+            // 註冊失敗，顯示錯誤訊息
+            alert(`註冊失敗: ${data.detail}`);
+            return false;
         }
+    } catch (error) {
+        console.error('註冊時發生錯誤:', error);
+        alert('註冊時發生錯誤，請稍後再試。');
+        return false;
+    }
+}
+
+async function login(username, password) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            }),
+        });
 
         const data = await response.json();
-        const token = data.token;
 
-        await authFirebase.signInWithCustomToken(token);
-        alert('註冊並登入成功！');
-        window.location.href = 'index.html';
+        if (response.status === 200) {
+            // 登入成功，儲存 token
+            localStorage.setItem('token', data.token);
+            return true;
+        } else {
+            // 登入失敗，顯示錯誤訊息
+            alert(`登入失敗: ${data.detail}`);
+            return false;
+        }
     } catch (error) {
-        console.error('錯誤:', error);
-        alert(error.message || '註冊時發生錯誤');
+        console.error('登入時發生錯誤:', error);
+        alert('登入時發生錯誤，請稍後再試。');
+        return false;
     }
-} 
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    // 可選：刷新頁面或跳轉到首頁
+    window.location.href = 'index.html';
+}

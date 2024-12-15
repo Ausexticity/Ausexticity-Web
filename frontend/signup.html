@@ -23,7 +23,10 @@
                 </div>
                 <div class="brand"><a href="index.html"><img src="images/adult_beauty.svg"></a></div>
                 <div class="links">
-                    <a href="login.html" class="account">LOGIN</a>
+                    <a href="login.html" class="account" id="login-link">LOGIN</a>
+
+                    <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
+                        style="display: none;">
                 </div>
             </div>
         </div>
@@ -36,10 +39,13 @@
                         <h2>註冊</h2>
                         <div class="form-div">
                             <div class="item">
-                                <input type="text" id="username" placeholder="用戶名稱">
+                                <input type="text" id="username" placeholder="用戶名稱" required>
                             </div>
                             <div class="item">
-                                <input type="password" id="password" placeholder="密碼">
+                                <input type="password" id="password" placeholder="密碼" required>
+                            </div>
+                            <div class="item">
+                                <input type="password" id="password_confirm" placeholder="確認密碼" required>
                             </div>
                             <div class="item action">
                                 <button id="sign-up-btn">註冊</button>
@@ -66,17 +72,30 @@
     <script src="js/aos.js?ver=2023102401"></script>
     <script src="js/owl.carousel.js?ver=2023100726"></script>
     <script src="js/script.js?ver=2023102401"></script>
+    <script src="js/misc.js"></script>
     <script src="js/auth.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const signUpBtn = document.getElementById('sign-up-btn');
             if (signUpBtn) {
                 signUpBtn.addEventListener('click', () => {
-                    const username = document.getElementById('username').value;
+                    const username = document.getElementById('username').value.trim();
                     const password = document.getElementById('password').value;
-                    signup(username, password);
+                    const passwordConfirm = document.getElementById('password_confirm').value;
+
+                    if (password !== passwordConfirm) {
+                        alert('密碼與確認密碼不一致！');
+                        return;
+                    }
+
+                    signup(username, password).then(() => {
+                        updateHeader();
+                        window.location.href = 'index.html';
+                    });
                 });
             }
+
+            updateHeader();
         });
     </script>
     <script>

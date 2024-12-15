@@ -5,7 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport"
         content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=yes,viewport-fit=cover">
-    <title>adultbeauty@erossuccess.com</title>
+    <title>登入 - adultbeauty@erossuccess.com</title>
     <link rel="shortcut icon" href="images/favicon.png">
     <link rel="stylesheet" href="css/vendor/aos.css?ver=2023102401">
     <link rel="stylesheet" href="css/vendor/owl.carousel.css?ver=2023100726">
@@ -23,7 +23,10 @@
                 </div>
                 <div class="brand"><a href="index.html"><img src="images/adult_beauty.svg"></a></div>
                 <div class="links">
-                    <a href="login.html" class="account">LOGIN</a>
+                    <a href="login.html" class="account" id="login-link">LOGIN</a>
+
+                    <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
+                        style="display: none;">
                 </div>
             </div>
         </div>
@@ -33,22 +36,21 @@
             <div class="block-login">
                 <div class="outer-div">
                     <div class="block-01">
-                        <h2>Login</h2>
+                        <h2>登入</h2>
                         <div class="form-div">
                             <div class="item">
-                                <input type="text" id="username" placeholder="User Name">
+                                <input type="text" id="username" placeholder="用戶名稱" required>
                             </div>
                             <div class="item">
-                                <input type="password" id="password" placeholder="Password">
+                                <input type="password" id="password" placeholder="密碼">
                             </div>
                             <div class="item forgot">
-                                <a href="forgot_password.html">Forgot Password</a>
+                                <a href="forgot_password.html">忘記密碼</a>
                             </div>
                             <div class="item action">
-                                <button id="sign-in-btn">Sign In</button>
+                                <button id="login-btn">登入</button>
                             </div>
-                            <div class="item remark">Didn’t have any account? <a href="signup.html">Sign Up here</a>
-                            </div>
+                            <div class="item remark">還沒有帳號？ <a href="signup.html">註冊</a></div>
                         </div>
                     </div>
                 </div>
@@ -70,17 +72,24 @@
     <script src="js/aos.js?ver=2023102401"></script>
     <script src="js/owl.carousel.js?ver=2023100726"></script>
     <script src="js/script.js?ver=2023102401"></script>
+    <script src="js/misc.js"></script>
     <script src="js/auth.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const signInBtn = document.getElementById('sign-in-btn');
-            if (signInBtn) {
-                signInBtn.addEventListener('click', () => {
-                    const username = document.getElementById('username').value;
+            const loginBtn = document.getElementById('login-btn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    const username = document.getElementById('username').value.trim();
                     const password = document.getElementById('password').value;
-                    login(username, password);
+
+                    login(username, password).then(() => {
+                        updateHeader();
+                        window.location.href = 'index.html';
+                    });
                 });
             }
+
+            updateHeader();
         });
     </script>
     <script>
