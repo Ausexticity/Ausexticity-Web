@@ -23,7 +23,7 @@
                 </div>
                 <div class="brand"><a href="index.html"><img src="images/adult_beauty.svg"></a></div>
                 <div class="links">
-                    <a href="#" class="account">MY ACCOUNT</a>
+                    <a href="login.html" class="account">LOGIN</a>
                 </div>
             </div>
         </div>
@@ -71,6 +71,18 @@
     <script src="js/owl.carousel.js?ver=2023100726"></script>
     <script src="js/script.js?ver=2023102401"></script>
     <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const signInBtn = document.getElementById('sign-in-btn');
+            if (signInBtn) {
+                signInBtn.addEventListener('click', () => {
+                    const username = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
+                    login(username, password);
+                });
+            }
+        });
+    </script>
     <script>
         AOS.init();
     </script>

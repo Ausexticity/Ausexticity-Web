@@ -1,10 +1,25 @@
-document.getElementById('sign-in-btn').addEventListener('click', async () => {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+const firebaseConfig = {
+    apiKey: "AIzaSyCUhBo3u0fY0yTFZomxyenFtuTAWSL8UKA",
+    authDomain: "eros-web-94e22.firebaseapp.com",
+    projectId: "eros-web-94e22",
+    storageBucket: "eros-web-94e22.firebasestorage.app",
+    messagingSenderId: "525089541232",
+    appId: "1:525089541232:web:9fe593008caad85df138b5",
+    measurementId: "G-B4N281YVGX"
+};
 
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const authFirebase = firebase.auth();
+
+// 定義 API 的基礎 URL
+const API_BASE_URL = 'http://localhost:8000';
+
+// 登入函式
+async function login(username, password) {
     try {
-        // 發送登入請求到後端
-        const response = await fetch('/api/login', {
+        const response = await fetch(`${API_BASE_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -14,42 +29,45 @@ document.getElementById('sign-in-btn').addEventListener('click', async () => {
 
         if (!response.ok) {
             const errorData = await response.json();
-            alert(errorData.detail || '登入失敗');
-            return;
+            throw new Error(errorData.detail || '登入失敗');
         }
 
         const data = await response.json();
         const token = data.token;
 
-        // 初始化 Firebase
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const authFirebase = firebase.auth();
-
-        // 使用 Firebase Authentication 登入
-        authFirebase.signInWithCustomToken(token)
-            .then((userCredential) => {
-                // 登入成功後的處理
-                const user = userCredential.user;
-                alert('登入成功！');
-                // 可以重定向到其他頁面
-                window.location.href = 'index.html';
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                alert(`登入失敗：${errorMessage}`);
-            });
+        await authFirebase.signInWithCustomToken(token);
+        alert('登入成功！');
+        window.location.href = 'index.html';
     } catch (error) {
         console.error('錯誤:', error);
-        alert('登入時發生錯誤');
+        alert(error.message || '登入時發生錯誤');
     }
-}); 
+}
+
+// 註冊函式
+async function signup(username, password) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/signup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || '註冊失敗');
+        }
+
+        const data = await response.json();
+        const token = data.token;
+
+        await authFirebase.signInWithCustomToken(token);
+        alert('註冊並登入成功！');
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error('錯誤:', error);
+        alert(error.message || '註冊時發生錯誤');
+    }
+} 

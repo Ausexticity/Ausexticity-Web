@@ -3,15 +3,14 @@ from pydantic import BaseModel
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
 from fastapi.middleware.cors import CORSMiddleware
+import bcrypt
 
 app = FastAPI()
 
 # 設定 CORS 允許的來源
 origins = [
-    "http://localhost",
-    "http://localhost:8000",
-    # 添加您的前端網址，例如:
-    "https://your-frontend-domain.com",
+    "http://127.0.0.1:5500",
+    "https://eros-frontend.onrender.com",
 ]
 
 app.add_middleware(
@@ -23,7 +22,7 @@ app.add_middleware(
 )
 
 # 初始化 Firebase Admin SDK
-cred = credentials.Certificate("path/to/your/serviceAccountKey.json")
+cred = credentials.Certificate("credential.json")
 firebase_admin.initialize_app(cred)
 
 # 初始化 Firestore 客戶端
@@ -44,13 +43,16 @@ def login(request: LoginRequest):
     
     if user_doc.exists:
         user_data = user_doc.to_dict()
-        if user_data.get('password') == password:
+        stored_password_hash = user_data.get('password').encode('utf-8')
+        
+        # 驗證密碼
+        if bcrypt.checkpw(password.encode('utf-8'), stored_password_hash):
             try:
                 # 生成自訂的 Firebase 令牌
-                custom_token = auth.create_custom_token(username.encode('utf-8'))
+                custom_token = auth.create_custom_token(username)
                 return {"token": custom_token.decode('utf-8')}
             except Exception as e:
-                raise HTTPException(status_code=500, detail="生成令牌時出錯")
+                raise HTTPException(status_code=500, detail=f"生成令牌時出錯: {str(e)}")
         else:
             raise HTTPException(status_code=401, detail="無效的密碼")
     else:
@@ -66,19 +68,22 @@ def signup(request: LoginRequest):
     if user_doc.exists:
         raise HTTPException(status_code=400, detail="使用者名稱已存在")
 
+    # 生成密碼哈希
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
     # 在 Firestore 中創建新使用者
     users_collection.document(username).set({
         'username': username,
-        'password': password  # 注意：在實際應用中，請使用加密方式存儲密碼
+        'password': hashed_password.decode('utf-8')  # 儲存為字串
     })
 
     try:
         # 生成自訂的 Firebase 令牌
-        custom_token = auth.create_custom_token(username.encode('utf-8'))
+        custom_token = auth.create_custom_token(username)
         return {"token": custom_token.decode('utf-8')}
     except Exception as e:
-        raise HTTPException(status_code=500, detail="生成令牌時出錯")
+        raise HTTPException(status_code=500, detail=f"生成令牌時出錯:{e}")
 
 @app.get("/api/hello")
 def read_root():
-    return {"message": "Hello, World!"}
+    return {"message": "Hello, Eros"}
