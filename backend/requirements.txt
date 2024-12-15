@@ -1,5 +1,6 @@
 fastapi
 uvicorn
+gunicorn
 aiofiles
 pydantic
 # 其他依賴
