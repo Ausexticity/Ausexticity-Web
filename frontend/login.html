@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="css/vendor/aos.css?ver=2023102401">
     <link rel="stylesheet" href="css/vendor/owl.carousel.css?ver=2023100726">
     <link rel="stylesheet" href="css/main.css?ver=2023102401">
-
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
 
 <body class="body-detail body-brown">
@@ -35,16 +36,16 @@
                         <h2>Login</h2>
                         <div class="form-div">
                             <div class="item">
-                                <input type="text" placeholder="User Name">
+                                <input type="text" id="username" placeholder="User Name">
                             </div>
                             <div class="item">
-                                <input type="password" placeholder="Password">
+                                <input type="password" id="password" placeholder="Password">
                             </div>
                             <div class="item forgot">
                                 <a href="forgot_password.html">Forgot Password</a>
                             </div>
                             <div class="item action">
-                                <button>Sign In</button>
+                                <button id="sign-in-btn">Sign In</button>
                             </div>
                             <div class="item remark">Didn’t have any account? <a href="signup.html">Sign Up here</a>
                             </div>
@@ -63,15 +64,13 @@
         </section>
     </main>
 
-
     <div class="overlay"></div>
-
-
 
     <script src="js/jquery.min.js"></script>
     <script src="js/aos.js?ver=2023102401"></script>
     <script src="js/owl.carousel.js?ver=2023100726"></script>
     <script src="js/script.js?ver=2023102401"></script>
+    <script src="js/auth.js"></script>
     <script>
         AOS.init();
     </script>

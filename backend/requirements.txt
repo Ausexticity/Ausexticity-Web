@@ -3,4 +3,5 @@ uvicorn
 gunicorn
 aiofiles
 pydantic
+firebase-admin
 # 其他依賴
