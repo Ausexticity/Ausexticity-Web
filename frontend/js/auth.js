@@ -1,3 +1,9 @@
+import { API_BASE_URL } from './config.js';
+
+// 使用 import 導入 Firebase
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js';
+
 const firebaseConfig = {
     apiKey: "AIzaSyCUhBo3u0fY0yTFZomxyenFtuTAWSL8UKA",
     authDomain: "eros-web-94e22.firebaseapp.com",
@@ -8,13 +14,9 @@ const firebaseConfig = {
     measurementId: "G-B4N281YVGX"
 };
 
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-const authFirebase = firebase.auth();
-
-// 定義 API 的基礎 URL
-// const API_BASE_URL = 'http://localhost:8000';
+// 初始化 Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
 async function signup(username, password) {
     try {
@@ -83,3 +85,6 @@ function logout() {
     // 可選：刷新頁面或跳轉到首頁
     window.location.href = 'index.html';
 }
+
+// 導出函數供其他模組使用
+export { signup, login, logout, auth };

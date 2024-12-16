@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/vendor/aos.css?ver=2023102401">
     <link rel="stylesheet" href="css/vendor/owl.carousel.css?ver=2023100726">
     <link rel="stylesheet" href="css/main.css?ver=2023102401">
-
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous">
 </head>
 
 <body class="body-detail">
@@ -20,8 +20,17 @@
                 <div class="links">
                     <a href="index.html" class="home">HOME</a>
                 </div>
-                <div class="brand"><a href="index.html"><img src="images/adult_beauty.svg"></a></div>
+                <div class="brand">
+                    <a href="index.html"><img src="images/adult_beauty.svg"></a>
+                </div>
                 <div class="links">
+                    <div class="search-container">
+                        <input type="text" id="navSearchInput" placeholder="搜尋文章...">
+                        <i class="fas fa-search"></i>
+                        <button type="button" class="search-button" aria-label="搜尋">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                     <a href="#" class="account">MY ACCOUNT</a>
                 </div>
             </div>
@@ -32,65 +41,14 @@
             <div class="block-article-detail">
                 <div class="outer-div">
                     <div class="block-detail">
-                        <div class="list-items">
-                            <div class="item">
-                                <div class="col01">
-                                    <img src="images/detail_img_01.png">
-                                </div>
-                                <div class="col02">
-                                    <h5>2023/07/21</h5>
-                                    <h2>文章標題</h2>
-                                    <p>Setting horizontal and vertical overflow behaviors allow you to simulate more
-                                        advanced user interactions, like navigating carousels or photo galleries.</p>
-                                    <p>Take a look at the first photo frame in the ‘Discover’ frame. This frame has a
-                                        horizontal overflow set so in the prototype, this will behave like a
-                                        horizontally scrolling carousel.</p>
-                                    <p>Take a look at the first photo frame in the ‘Discover’ frame. This frame has a
-                                        horizontal overflow set so in the prototype, this will behave like a
-                                        horizontally scrolling carousel.</p>
-                                    <p>Take a look at the first photo frame in the ‘Discover’ frame. This frame has a
-                                        horizontal overflow set so in the prototype, this will behave like a
-                                        horizontally scrolling carousel.</p>
-                                    <p>Take a look at the first photo frame in the ‘Discover’ frame. This frame has a
-                                        horizontal overflow set so in the prototype, this will behave like a
-                                        horizontally scrolling carousel.</p>
-                                    <p>Take a look at the first photo frame in the ‘Discover’ frame. This frame has a
-                                        horizontal overflow set so in the prototype, this will behave like a
-                                        horizontally scrolling carousel.</p>
-                                    <p>Take a look at the first photo frame in the ‘Discover’ frame. This frame has a
-                                        horizontal overflow set so in the prototype, this will behave like a
-                                        horizontally scrolling carousel.</p>
-                                    <p>Take a look at the first photo frame in the ‘Discover’ frame. This frame has a
-                                        horizontal overflow set so in the prototype, this will behave like a
-                                        horizontally scrolling carousel.</p>
-                                    <p>Take a look at the first photo frame in the ‘Discover’ frame. This frame has a
-                                        horizontal overflow set so in the prototype, this will behave like a
-                                        horizontally scrolling carousel.</p>
-                                </div>
-                            </div>
-                            <div class="item">
-                                <div class="col01">
-                                    <img src="images/detail_img_02.png">
-                                </div>
-                                <div class="col02">
-                                    <p>Setting horizontal and vertical overflow behaviors allow you to simulate more
-                                        advanced user interactions, like navigating carousels or photo galleries.</p>
-                                    <p>Take a look at the first photo frame in the ‘Discover’ frame. This frame has a
-                                        horizontal overflow set so in the prototype, this will behave like a
-                                        horizontally scrolling carousel.Take a look at the first photo frame in the
-                                        ‘Discover’ frame. This frame has a horizontal overflow set so in the prototype,
-                                        this will behave like a horizontally scrolling carousel.Take a look at the first
-                                        photo frame in the ‘Discover’ frame. This frame has a horizontal overflow set so
-                                        in the prototype, this will behave like a horizontally scrolling carousel.Take a
-                                        look at the first photo frame in the ‘Discover’ frame. This frame has a
-                                        horizontal overflow set so in the prototype, this will behave like a
-                                        horizontally scrolling carousel.</p>
-                                </div>
-                            </div>
+                        <div class="list-items" id="article-content">
+                            <!-- 動態載入的文章內容 -->
                         </div>
                         <div class="action">
-                            <a href="#">BACK</a>
-                            <a href="#">NEXT</a>
+                            <a href="#" id="back-button" aria-label="返回上一篇文章"><i class="fa-solid fa-arrow-left"></i>
+                                BACK</a>
+                            <a href="#" id="next-button" aria-label="前往下一篇文章">NEXT <i
+                                    class="fa-solid fa-arrow-right"></i></a>
                         </div>
                     </div>
                 </div>
@@ -106,15 +64,105 @@
         </section>
     </main>
 
-
     <div class="overlay"></div>
-
-
 
     <script src="js/jquery.min.js"></script>
     <script src="js/aos.js?ver=2023102401"></script>
-    <script src="js/owl.carousel.js?ver=2023100726"></script>
-    <script src="js/script.js?ver=2023102401"></script>
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/misc.js"></script>
+    <script type="module" src="js/script.js?ver=2023102401"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/nav-search.js"></script>
+    <script type="module">
+        import { fetchArticles, formatPublishedDate, truncateTitle } from './js/misc.js';
+
+        // 動態載入文章內容的 JavaScript 程式碼
+        async function loadArticleDetail() {
+            try {
+                // 獲取 URL 中的 id 參數
+                const urlParams = new URLSearchParams(window.location.search);
+                const articleId = urlParams.get('id');
+
+                if (!articleId) {
+                    console.error('沒有提供文章 ID');
+                    showErrorMessage('沒有提供文章 ID');
+                    return;
+                }
+
+                // 獲取所有文章資料
+                const articles = await fetchArticles();
+
+                // 找到對應的文章索引
+                const articleIndex = articles.findIndex(a => a.id === articleId);
+
+                if (articleIndex === -1) {
+                    console.error('找不到對應的文章');
+                    showErrorMessage('找不到對應的文章');
+                    return;
+                }
+
+                const article = articles[articleIndex];
+
+                // 填充文章內容
+                const articleContent = document.getElementById('article-content');
+                articleContent.innerHTML = `
+                    <div class="item">
+                        <div class="col01">
+                            <img src="${article.imageUrl || 'images/default_detail_img.png'}" alt="文章圖片">
+                        </div>
+                        <div class="col02">
+                            <h5>${formatPublishedDate(article.published_at)}</h5>
+                            <h2>${article.title}</h2>
+                            ${article.content.split('\n\n').map(paragraph => `<p>${paragraph}</p>`).join('')}
+                        </div>
+                    </div>
+                `;
+
+                // 設定 BACK 和 NEXT 按鈕
+                const backButton = document.getElementById('back-button');
+                const nextButton = document.getElementById('next-button');
+
+                if (articleIndex > 0) {
+                    const prevArticle = articles[articleIndex - 1];
+                    backButton.href = `article_detail.html?id=${prevArticle.id}`;
+                    backButton.innerHTML = `<i class="fa-solid fa-arrow-left"></i> ${truncateTitle(prevArticle.title)}`;
+                    backButton.setAttribute('aria-label', `返回上一篇文章：${prevArticle.title}`);
+                } else {
+                    backButton.style.display = 'none'; // 隱藏 BACK 按鈕
+                }
+
+                if (articleIndex < articles.length - 1) {
+                    const nextArticle = articles[articleIndex + 1];
+                    nextButton.href = `article_detail.html?id=${nextArticle.id}`;
+                    nextButton.innerHTML = `${truncateTitle(nextArticle.title)} <i class="fa-solid fa-arrow-right"></i>`;
+                    nextButton.setAttribute('aria-label', `前往下一篇文章：${nextArticle.title}`);
+                } else {
+                    nextButton.style.display = 'none'; // 隱藏 NEXT 按鈕
+                }
+
+            } catch (error) {
+                console.error('載入文章詳情失敗:', error);
+                showErrorMessage('載入文章詳情失敗，請稍後再試。');
+            }
+        }
+
+        // 顯示錯誤訊息給使用者
+        function showErrorMessage(message) {
+            const articleContent = document.getElementById('article-content');
+            articleContent.innerHTML = `
+                <div class="error-message" style="color: red; text-align: center;">
+                    <p>${message}</p>
+                </div>
+            `;
+            // 隱藏 BACK 和 NEXT 按鈕
+            document.getElementById('back-button').style.display = 'none';
+            document.getElementById('next-button').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadArticleDetail();
+        });
+    </script>
     <script>
         AOS.init();
     </script>

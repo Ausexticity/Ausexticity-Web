@@ -22,7 +22,7 @@ def generate_sample_articles(db):
             "author": "張小姐",
             "category": "NEWS",
             "published_at": datetime.datetime.now(),
-            "image_url": "https://example.com/images/trend1.jpg"
+            "image_url": "https://cdn.jsdelivr.net/gh/ncchen99/web-app-assets@3.6/blog/wallpaper/img4.jpg"
         },
         {
             "title": "Dr.李告訴你：如何保持肌膚年輕",
@@ -38,7 +38,7 @@ def generate_sample_articles(db):
             "author": "王先生",
             "category": "NEWS",
             "published_at": datetime.datetime.now(),
-            "image_url": "https://example.com/images/natural.jpg"
+            "image_url": "https://cdn.jsdelivr.net/gh/ncchen99/web-app-assets@3.6/blog/wallpaper/img10.jpg"
         },
         {
             "title": "Dr.陳分享：日常護膚的重要性",

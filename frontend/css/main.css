@@ -112,6 +112,13 @@ header .header-div .outer-div .brand a img:nth-child(1) {
   margin-right: 15px;
 }
 
+header .header-div .outer-div .links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
 header .header-div .outer-div .links a {
   display: inline-block;
   font-family: "Alatsi", sans-serif;
@@ -355,7 +362,7 @@ footer .section-footer .block-outer {
 .section-home-banner .outer-div .owl-home-banner .item .two-cols .col02 a h1 {
   color: #152F2B;
   font-family: "Alatsi", sans-serif;
-  font-size: 36px;
+  font-size: 24px;
   background-image: url(./../images/home_news_arrow.svg);
   background-position: left bottom;
   background-repeat: no-repeat;
@@ -364,8 +371,10 @@ footer .section-footer .block-outer {
 .section-home-banner .outer-div .owl-home-banner .item .two-cols .col02 a p {
   color: #152F2B;
   font-family: "DM Mono", monospace;
-  font-size: 20px;
+  font-size: 16px;
   margin-top: 15px;
+  line-height: 1.5;
+  margin-right: 20px;
 }
 
 .section-home-banner .outer-div .owl-home-banner .item .two-cols .col02 a:hover {
@@ -1126,8 +1135,8 @@ footer .section-footer .block-outer {
 .section-article-detail .block-article-detail .outer-div .block-detail .list-items .item {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  margin: 40px 0;
+  /* align-items: center; */
+  margin: 40px 80px;
 }
 
 .section-article-detail .block-article-detail .outer-div .block-detail .list-items .item .col01 {
@@ -1141,6 +1150,7 @@ footer .section-footer .block-outer {
 }
 
 .section-article-detail .block-article-detail .outer-div .block-detail .list-items .item .col02 {
+  padding-top: 20px;
   width: calc(100% - 400px);
 }
 
@@ -1172,9 +1182,14 @@ footer .section-footer .block-outer {
 
 .section-article-detail .block-article-detail .outer-div .block-detail .action {
   text-align: center;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .section-article-detail .block-article-detail .outer-div .block-detail .action a {
+  padding: 1px 10px;
   border-radius: 10px;
   min-width: 134px;
   min-height: 52px;
@@ -1188,13 +1203,18 @@ footer .section-footer .block-outer {
   align-items: center;
   justify-content: center;
   font-size: 13px;
-  margin: 0 8px;
+  margin: 0 4px;
 }
 
 .section-article-detail .block-article-detail .outer-div .block-detail .action a:hover {
   background-color: #0ACF83;
   color: #fff;
 }
+
+.section-article-detail .block-article-detail .outer-div .block-detail .action a i {
+  margin: 0 8px;
+}
+
 
 .section-post {
   background-image: url(./../images/post_deco.svg);
@@ -1593,11 +1613,11 @@ footer .section-footer .block-outer {
 
 /*# sourceMappingURL=main.css.map */
 
-/* 新增使用者圖片的樣式 */
+/* 新增使用者圖片的樣�� */
 .user-icon {
-  width: 40px;
+  width: 50px;
   /* 調整大小 */
-  height: 40px;
+  height: 50px;
   border-radius: 50%;
   /* 使圖片圓形 */
   cursor: pointer;
@@ -1606,7 +1626,104 @@ footer .section-footer .block-outer {
 /* 響應式調整 */
 @media (max-width: 600px) {
   .user-icon {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
   }
+}
+
+/* 導航欄搜尋框樣式 */
+header .header-div .outer-div .links .search-container {
+  position: relative;
+  max-width: 737px;
+  min-width: 280px;
+  margin-right: 60px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+header .header-div .outer-div .links .search-container input {
+  width: 100%;
+  color: #686868;
+  border: 1px solid #BABABA;
+  font-size: 14px;
+  border-radius: 10px;
+  min-height: 50px;
+  padding: 0 15px;
+}
+
+header .header-div .outer-div .links .search-container .fa-search {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #BABABA;
+  pointer-events: none;
+  margin-right: 10px;
+}
+
+header .header-div .outer-div .links .search-container .search-button {
+  display: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+header .header-div .outer-div .links .search-container .search-button i {
+  font-size: 20px;
+  color: #152F2B;
+}
+
+@media all and (max-width: 992px) {
+  header .header-div .outer-div .links .search-container {
+    max-width: 500px;
+    min-width: 200px;
+    margin-right: 30px;
+  }
+}
+
+@media all and (max-width: 640px) {
+  header .header-div .outer-div .links .search-container {
+    min-width: auto;
+    margin-right: 10px;
+  }
+
+  header .header-div .outer-div .links .search-container input,
+  header .header-div .outer-div .links .search-container i {
+    display: none;
+  }
+
+  header .header-div .outer-div .links .search-container .search-button {
+    display: block;
+    height: 45px;
+    width: 45px;
+    /* margin-right: 15px; */
+  }
+
+  header .header-div .outer-div .links .search-container .search-button i {
+    font-size: 20px;
+    color: #152F2B;
+    display: block;
+    right: 0;
+  }
+}
+
+/* 文章列表頁的"更多"連結樣式 */
+
+.section-home-search-news .block-02 .more {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.section-home-search-news .block-02 .more a {
+  color: #f8e0bc;
+  text-decoration: none;
+  padding: 5px 15px;
+  border: 1px solid #f8e0bc;
+  border-radius: 20px;
+  font-size: 20px;
+  transition: all 0.3s ease;
 }

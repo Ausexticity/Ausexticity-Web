@@ -1,6 +1,8 @@
+import { updateHeader } from './misc.js';
+
 $(function () {
 	setScroll();
-	setSlider();
+	// setSlider();
 	setCheckboxListToggle();
 	removeUploadImg();
 });
@@ -47,31 +49,31 @@ function setScroll() {
 	});
 }
 
-function setSlider() {
-	if ($('.owl-home-banner').length > 0) {
-		$('.owl-home-banner').owlCarousel({
-			items: 1,
-			merge: true,
-			loop: true,
-			margin: 0,
-			dots: true
+// function setSlider() {
+// 	if ($('.owl-home-banner').length > 0) {
+// 		$('.owl-home-banner').owlCarousel({
+// 			items: 1,
+// 			merge: true,
+// 			loop: true,
+// 			margin: 0,
+// 			dots: true
 
-		})
-	}
-	if ($('.owl-welcome-banner').length > 0) {
-		$('.owl-welcome-banner').owlCarousel({
-			items: 1,
-			merge: true,
-			loop: true,
-			margin: 0,
-			dots: true
+// 		})
+// 	}
+// 	if ($('.owl-welcome-banner').length > 0) {
+// 		$('.owl-welcome-banner').owlCarousel({
+// 			items: 1,
+// 			merge: true,
+// 			loop: true,
+// 			margin: 0,
+// 			dots: true
 
-		})
-	}
+// 		})
+// 	}
 
 
 
-}
+// }
 
 // 定義初始化 Owl Carousel 的函數
 function initializeOwlCarousel() {
@@ -82,7 +84,7 @@ function initializeOwlCarousel() {
 			loop: true,
 			autoplay: true,
 			autoplayTimeout: 5000,
-			nav: true,
+			nav: false,
 			dots: true,
 			// 其他 owl-carousel 設定
 		});
@@ -96,4 +98,5 @@ document.addEventListener('DOMContentLoaded', () => {
 	// 其他初始化代碼
 });
 
+export { initializeOwlCarousel };
 

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport"
+        content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=yes,viewport-fit=cover">
+    <title>搜尋 - adultbeauty@erossuccess.com</title>
+    <link rel="shortcut icon" href="images/favicon.png">
+    <link rel="stylesheet" href="css/vendor/aos.css?ver=2023102401">
+    <link rel="stylesheet" href="css/main.css?ver=2023102401">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous">
+</head>
+
+<body class="body-home">
+    <header>
+        <div class="header-div">
+            <div class="outer-div">
+                <div class="brand">
+                    <a href="index.html">
+                        <img src="images/header_logo.svg">
+                        <img src="images/adult_beauty.svg">
+                    </a>
+                </div>
+                <div class="links">
+                    <a href="login.html" class="login" id="login-link">LOGIN</a>
+                    <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
+                        style="display: none;">
+
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section-article-list">
+            <div class="block-article-list">
+                <div class="outer-div">
+                    <div class="block-02">
+                        <h2>搜尋文章</h2>
+                        <div class="search-div">
+                            <input type="text" id="searchInput" placeholder="請輸入關鍵字...">
+                            <button type="button" id="searchButton">搜尋</button>
+                        </div>
+                        <div class="search-options" style="text-align: center; margin: 20px 0;">
+                            <label style="margin-right: 20px; color: #686868;">
+                                <input type="checkbox" id="searchTitle" checked> 搜尋標題
+                            </label>
+                            <label style="color: #686868;">
+                                <input type="checkbox" id="searchContent" checked> 搜尋內容
+                            </label>
+                        </div>
+                        <div class="search-result-lists" id="searchResults">
+                            <!-- 搜尋結果將在這裡動態插入 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block-contact">
+                <div class="outer-div">
+                    <div class="title"><img src="images/footer_title_contact.svg"></div>
+                    <div class="info">
+                        <p>adultbeauty@erossuccess.com</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="overlay"></div>
+    <script src="js/aos.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/misc.js"></script>
+    <script type="module" src="js/script.js"></script>
+    <script type="module" src="js/search.js"></script>
+    <script type="module" src="js/nav-search.js"></script>
+    <script>
+        AOS.init();
+    </script>
+</body>
+
+</html>

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/vendor/aos.css?ver=2023102401">
     <link rel="stylesheet" href="css/vendor/owl.carousel.css?ver=2023100726">
     <link rel="stylesheet" href="css/main.css?ver=2023102401">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous">
 </head>
 
 <body class="body-home">
@@ -19,10 +20,14 @@
                 <div class="brand"><a href="index.html"><img src="images/header_logo.svg"><img
                             src="images/adult_beauty.svg"></a></div>
                 <div class="links">
-                    <!-- LOGIN 連結 -->
+                    <div class="search-container">
+                        <input type="text" id="navSearchInput" placeholder="搜尋文章...">
+                        <i class="fas fa-search"></i>
+                        <button type="button" class="search-button" aria-label="搜尋">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                     <a href="login.html" class="login" id="login-link">LOGIN</a>
-
-                    <!-- 使用者圖片，初始為隱藏 -->
                     <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
                         style="display: none;">
                 </div>
@@ -74,7 +79,13 @@
                     <div class="new-lists" id="doctor-list">
                         <!-- 動態載入的 doctor-list 文章 -->
                     </div>
+                    <div class="new-lists">
+                        <div class="more">
+                            <a href="search.html?sort=latest">更多</a>
+                        </div>
+                    </div>
                 </div>
+            </div>
             </div>
             <div class="block-contact">
                 <div class="outer-div">
@@ -90,27 +101,36 @@
     <div class="overlay"></div>
 
     <script src="js/jquery.min.js"></script>
-    <script src="js/aos.js?ver=2023102401"></script>
-    <script src="js/script.js?ver=2023102401"></script>
-    <script src="js/misc.js"></script>
-    <script src="js/auth.js"></script>
-    <script>
-        // 動態載入 Owl Carousel 的 JavaScript 檔案
-        function loadScript(url) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = url;
-                script.onload = () => resolve();
-                script.onerror = () => reject(new Error('無法載入腳本: ' + url));
-                document.body.appendChild(script);
-            });
-        }
+    <script src="js/aos.js"></script>
+    <script src="js/owl.carousel.js"></script>
+
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/misc.js"></script>
+    <script type="module" src="js/script.js"></script>
+    <script type="module" src="js/nav-search.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module">
+        import { updateHeader } from './js/misc.js';
+        import { fetchArticles } from './js/misc.js';
+        import { truncateTitle } from './js/misc.js';
+        import { initializeOwlCarousel } from './js/script.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             updateHeader();
 
             try {
+                // 動態載入 Owl Carousel 的 JavaScript 檔案
+                function loadScript(url) {
+                    return new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.type = 'text/javascript';
+                        script.src = url;
+                        script.onload = () => resolve();
+                        script.onerror = () => reject(new Error('無法載入腳本: ' + url));
+                        document.body.appendChild(script);
+                    });
+                }
+
                 // 獲取文章資料
                 const articles = await fetchArticles();
 
@@ -127,14 +147,14 @@
                         itemElement.innerHTML = `
                             <div class="two-cols">
                                 <div class="col01">
-                                    <div class="img" style="background-image: url(${article.imageUrl || 'images/pexels-aryane-vilarim-2869078-1.png'});">
+                                    <div class="img" style="background-image: url(${article.image_url || 'images/pexels-aryane-vilarim-2869078-1.png'});">
                                         <img src="images/home_news_transparent.gif" alt="News Image">
                                     </div>
                                 </div>
                                 <div class="col02">
                                     <a href="article_detail.html?id=${article.id}">
-                                        <h1>NEWS</h1>
-                                        <p>${article.summary || '內文內文內文內文 內文內文內文'}</p>
+                                        <h1>${truncateTitle(article.title, 6)}</h1>
+                                        <p>${article.content || '內文內文內文內文 內文內文內文'}</p>
                                     </a>
                                 </div>
                             </div>
