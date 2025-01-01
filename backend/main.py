@@ -1,10 +1,22 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
 from fastapi.middleware.cors import CORSMiddleware
 import bcrypt
 import datetime
+import os
+from dotenv import load_dotenv
+from google.cloud import bigquery, translate_v2 as translate
+from vertexai.language_models import TextEmbeddingModel
+import anthropic
+from ai_module import (
+    load_query_embedding,
+    retrieve_similar_documents,
+    translate_text,
+    generate_response
+)
 
 app = FastAPI()
 
@@ -30,6 +42,47 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 users_collection = db.collection('users')
 articles_collection = db.collection('articles')
+
+# 載入環境變數
+try:
+    load_dotenv()
+except Exception as e:
+    print(f"無法載入環境變數: {e}")
+    
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+
+# 初始化 Anthropic client
+claude_client = anthropic.Anthropic(
+    api_key=ANTHROPIC_API_KEY,
+)
+MODEL = "claude-3-5-sonnet-20241022"
+
+# 定義驗證依賴項
+security = HTTPBearer()
+
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    try:
+        decoded_token = auth.verify_id_token(token)
+        return decoded_token
+    except firebase_admin._auth_utils.InvalidIdTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="無效的驗證令牌",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except firebase_admin._auth_utils.ExpiredIdTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="驗證令牌已過期",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="無法驗證驗證令牌",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 class LoginRequest(BaseModel):
     username: str
@@ -109,3 +162,53 @@ def get_articles():
 @app.get("/api/hello")
 def read_root():
     return {"message": "Hello, Eros"}
+
+class ChatRequest(BaseModel):
+    query: str
+
+@app.post("/api/chat")
+def chat(request: ChatRequest, user: dict = Depends(verify_token)):
+    user_query = request.query
+
+    # 使用 ai_module 的功能
+    translated_query = translate_text(user_query)
+    print("\n翻譯後的英文查詢：")
+    print(translated_query)
+    print("\n" + "="*50 + "\n")
+
+    # 加載中文查詢嵌入
+    query_embedding_cn = load_query_embedding(user_query)
+
+    # 加載英文查詢嵌入
+    query_embedding_en = load_query_embedding(translated_query)
+
+    # 檢索相似中文文檔
+    dataset_id = "Eros_AI_RAG"
+    table_id = "combined_embeddings"
+    project_id = "eros-ai-446307"
+    similar_docs_cn = retrieve_similar_documents(
+        query_embedding_cn, dataset_id, table_id, project_id, top_n=2
+    )
+
+    # 檢索相似英文文檔
+    similar_docs_en = retrieve_similar_documents(
+        query_embedding_en, dataset_id, table_id, project_id, top_n=3
+    )
+
+    print(similar_docs_cn)
+    print(similar_docs_en)
+
+    # 生成回答，整合中英文文獻
+    answer = generate_response(
+        similar_docs_cn,
+        similar_docs_en,
+        user_query,
+        claude_client,
+        MODEL
+    )
+
+    print("生成的回答：")
+    print(answer) 
+    print("\n" + "="*50 + "\n")
+
+    return {"response": answer}

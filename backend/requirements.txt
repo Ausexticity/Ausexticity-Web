@@ -5,4 +5,9 @@ aiofiles
 pydantic
 firebase-admin
 bcrypt
+anthropic
+google-cloud-translate
+google-cloud-bigquery
+google-cloud-aiplatform
+python-dotenv
 # 其他依賴
