@@ -79,3 +79,10 @@
 
 ## 授權
 © 2023 Adult Beauty. All Rights Reserved.
+
+
+<!-- 
+TODO:
+detail 頁面的 RWD
+Navbar 小此吋螢幕
+ -->

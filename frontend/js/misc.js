@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './config.js';
+import { logout } from './auth.js';
 
 // 定義 LocalStorage 鍵名
 const ARTICLES_KEY = 'articles';
@@ -6,7 +7,7 @@ const ARTICLES_TIMESTAMP_KEY = 'articles_timestamp';
 const CACHE_DURATION = 60 * 60 * 1000; // 1 小時
 
 function updateHeader() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('idToken');
     const loginLink = document.getElementById('login-link');
     const userIcon = document.getElementById('user-icon');
 
@@ -68,12 +69,6 @@ async function fetchArticles() {
     }
 }
 
-// 登出函式
-function logout() {
-    localStorage.removeItem('token');
-    // 可選：刷新頁面或跳轉到首頁
-    window.location.href = 'index.html';
-}
 
 // 格式化發佈日期的函式
 function formatPublishedDate(publishedAt) {
@@ -110,4 +105,4 @@ document.addEventListener('DOMContentLoaded', () => {
     updateHeader();
     scheduleArticleUpdate();
 });
-export { updateHeader, fetchArticles, logout, formatPublishedDate, truncateTitle };
+export { updateHeader, fetchArticles, formatPublishedDate, truncateTitle };
