@@ -26,8 +26,8 @@ import { chatHistoryManager } from './chat_history.js';
 
     const bot = new ChatSDK({
         config: {
-            locale: 'zh-TW', // 修改為繁體中文
-            lang: 'zh-TW',
+            locale: 'en-US',
+            lang: 'en-US',
             navbar: {
                 title: 'Ausexticity AI',
             },
