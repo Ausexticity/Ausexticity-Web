@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-TW">
 
 <head>
     <meta name="renderer" content="webkit" />
@@ -8,16 +8,100 @@
     <meta charset="UTF-8" />
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
-    <title>智能助理</title>
+    <title>AI - Ausexticity</title>
+    <link rel="shortcut icon" href="images/favicon.png">
     <link rel="stylesheet" href="https://g.alicdn.com/code/npm/@ali/chatui-sdk/6.4.6/ChatSDK.css" />
+    <link rel="stylesheet" href="css/age_modal.css" />
 </head>
 
 <body>
-    <div id="root"></div>
+    <!-- 年齡確認對話框 -->
+    <div id="age-confirmation-modal">
+        <div id="age-confirmation-box">
+            <h1>這是一個成人網站</h1>
+            <p>本網站包含限制級內容。進入網站即表示您確認已年滿 18 歲或在您所在司法管轄區的法定年齡，並同意瀏覽成人內容。</p>
+            <div class="button-group">
+                <button id="age-confirm-button" class="enter-button">我已年滿 18 歲 - 進入</button>
+                <button id="age-reject-button" class="exit-button">我未滿 18 歲 - 離開</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="root" style="display: none;"></div>
     <script src="https://g.alicdn.com/code/npm/@ali/chatui-sdk/6.4.6/ChatSDK.js"></script>
     <script src="https://g.alicdn.com/code/npm/@ali/chatui-sdk/6.4.6/isvParser.js"></script>
     <script src="//g.alicdn.com/chatui/icons/2.0.2/index.js"></script>
     <script type="module" src="js/setupbot.js"></script>
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('age-confirmation-modal');
+            const confirmButton = document.getElementById('age-confirm-button');
+            const rejectButton = document.getElementById('age-reject-button');
+            const root = document.getElementById('root');
+
+            // 檢查是否已確認年齡
+            const isAgeConfirmed = localStorage.getItem('ageConfirmed');
+
+            if (isAgeConfirmed === 'true') {
+                modal.style.display = 'none';
+                root.style.display = 'block';
+            } else {
+                modal.style.display = 'flex';
+                root.style.display = 'none';
+            }
+
+            // 按鈕波紋效果
+            function createRipple(event) {
+                const button = event.currentTarget;
+                const ripple = document.createElement('span');
+                const rect = button.getBoundingClientRect();
+
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                ripple.className = 'button-ripple';
+
+                button.appendChild(ripple);
+
+                ripple.addEventListener('animationend', () => {
+                    ripple.remove();
+                });
+            }
+
+            // 確認按鈕點擊
+            confirmButton.addEventListener('click', (e) => {
+                createRipple(e);
+
+                // 淡出動畫
+                modal.classList.add('fade-out');
+
+                setTimeout(() => {
+                    localStorage.setItem('ageConfirmed', 'true');
+                    modal.style.display = 'none';
+                    root.style.display = 'block';
+                }, 300);
+            });
+
+            // 離開按鈕點擊
+            rejectButton.addEventListener('click', (e) => {
+                createRipple(e);
+
+                // 淡出動畫
+                modal.classList.add('fade-out');
+
+                setTimeout(() => {
+                    window.location.href = '/'; // 跳轉到首頁
+                }, 300);
+            });
+
+            // 為按鈕添加波紋效果監聽器
+            [confirmButton, rejectButton].forEach(button => {
+                button.addEventListener('click', createRipple);
+            });
+        });
+    </script>
 </body>
 
 </html>

@@ -110,12 +110,13 @@ function logout() {
     });
 }
 
-// 發送聊天請求的函數
-async function sendChatRequest(query) {
+// 修改後的發送聊天請求函數
+async function sendChatRequest(query, context = []) {
     const idToken = localStorage.getItem('idToken');
 
     if (!idToken) {
         alert('未找到有效的登入憑證，請先登入。');
+        window.location.href = 'index.html';
         return;
     }
 
@@ -126,7 +127,7 @@ async function sendChatRequest(query) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
             },
-            body: JSON.stringify({ query }),
+            body: JSON.stringify({ query, context }),
         });
 
         const data = await response.json();
