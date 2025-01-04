@@ -196,25 +196,23 @@ def generate_response(documents_cn, documents_en, user_query, additional_context
         str: 生成的回答。
     """
     try:
+        additional_context = [{'role': 'assistant' if msg['is_bot'] else 'user', 'content': msg['message']} for msg in additional_context]
         combined_context = "\n\n".join([doc["content"] for doc in documents_cn + documents_en])
-        prompt = f"""上下文信息：
+        prompt = f"""相關文章：
 {combined_context}
-
-額外上下文：
-{additional_context}
 
 用戶問題：
 {user_query}
 
 回答："""
-
         # 使用 Anthropic API 進行回答
         message = claude_client.messages.create(
             model=model,
             max_tokens=8192,
             temperature=0.6,  # 調整此處的 temperature
-            system="""你是一個飽學性知識的專家，負責與用戶真誠的聊天。 過程要保持熱情、友善且具有同理心。""",
-            messages=[
+            system="""你是一個飽學性知識的專家，負責與用戶真誠的聊天!
+            過程要保持熱情、友善且具有同理心💛""",
+            messages= additional_context + [
                 {
                     "role": "user",
                     "content": prompt
@@ -262,18 +260,20 @@ def is_sex_related(query: str, claude_client, model) -> bool:
         # 預設假設為非性相關問題
         return False 
 
-def generate_direct_response(user_query: str, claude_client, model: str) -> str:
+def generate_direct_response(user_query: str, additional_context: list, claude_client, model: str) -> str:
     """
     生成直接回答，無需檢索相關文檔。
     
     Args:
         user_query (str): 使用者的查詢。
+        additional_context (list): 額外上下文。
         claude_client: Anthropic 的 API 客戶端。
         model (str): Anthropic 模型名稱。
     
     Returns:
         str: 生成的回答。
     """
+    additional_context = [{'role': 'assistant' if msg['is_bot'] else 'user', 'content': msg['message']} for msg in additional_context]
     prompt = (
         f"使用者問題：{user_query}\n"
         "請提供相應的回答。"
@@ -283,8 +283,8 @@ def generate_direct_response(user_query: str, claude_client, model: str) -> str:
             model=model,
             max_tokens=8192,
             temperature=0.6,  # 調整此處的 temperature
-            system="你是一個飽學性知識的專家，負責與用戶真誠的聊天。 過程要保持熱情、友善且具有同理心。",
-            messages=[
+            system="你是一個飽學性知識的專家，負責與用戶真誠的聊天! 過程要保持熱情、友善且具有同理心💛",
+            messages= additional_context + [
                 {
                     "role": "user",
                     "content": prompt

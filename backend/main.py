@@ -182,14 +182,16 @@ class ChatRequest(BaseModel):
 async def chat(request: ChatRequest, user: dict = Depends(verify_token)):
     user_query = request.query
     user_context = request.context  # 獲取上下文資料
-
+    
+    
     # 1. 判斷問題是否與性相關
     sex_related = is_sex_related(user_query, claude_client, MODEL)
     # sex_related = True
+    
     if sex_related:
         logger.info("問題與性相關，執行向量檢索。")
-        # 處理上下文，例如整合上下文與當前查詢
-        recent_context = "\n".join([f"{'Robot' if msg['is_bot'] else 'User'}: {msg['message']}" for msg in user_context])
+        
+        
 
         # 同時執行翻譯與加載查詢嵌入
         translated_query_task = asyncio.create_task(translate_text_async(user_query))
@@ -227,8 +229,9 @@ async def chat(request: ChatRequest, user: dict = Depends(verify_token)):
             similar_docs_cn_task, similar_docs_en_task
         )
         
-        logger.info(f"中文相似文獻：{similar_docs_cn}")
-        logger.info(f"英文相似文獻：{similar_docs_en}") 
+        logger.info(f"已找到相似文獻")
+        # logger.info(f"中文相似文獻：{similar_docs_cn}")
+        # logger.info(f"英文相似文獻：{similar_docs_en}") 
         logger.info("="*50)
 
         # 生成回答，整合中英文文獻與額外上下文
@@ -236,7 +239,7 @@ async def chat(request: ChatRequest, user: dict = Depends(verify_token)):
             similar_docs_cn,
             similar_docs_en,
             user_query,            # 使用合併後的查詢
-            recent_context,        # 傳遞額外的上下文資訊
+            user_context,        # 傳遞額外的上下文資訊
             claude_client,
             MODEL
         )
@@ -245,7 +248,7 @@ async def chat(request: ChatRequest, user: dict = Depends(verify_token)):
         logger.info("="*50)
     else:
         logger.info("問題非性相關，直接生成回答。")
-        answer = generate_direct_response(user_query, claude_client, MODEL)
+        answer = generate_direct_response(user_query, user_context, claude_client, MODEL)
 
     return {"response": answer}
 
@@ -277,7 +280,7 @@ def save_chat_history(message: ChatMessage, user: dict = Depends(verify_token)):
             'messages': firestore.ArrayUnion([message_data])
         }, merge=True)
         
-        logger.info(f"成功保存訊息：{message_data}")
+        logger.info(f"成功保存訊息！")
         return {"status": "success"}
     except Exception as e:
         logger.error(f"儲存聊天記錄時出錯：{str(e)}")
