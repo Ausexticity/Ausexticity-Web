@@ -12,13 +12,20 @@ from google.cloud import bigquery, translate_v2 as translate
 from vertexai.language_models import TextEmbeddingModel
 import anthropic
 from ai_module import (
-    load_query_embedding,
-    retrieve_similar_documents,
-    translate_text,
-    generate_response
+    load_query_embedding_async,
+    retrieve_similar_documents_async,
+    translate_text_async,
+    generate_response,
+    is_sex_related,
+    generate_direct_response
 )
+import logging
+import asyncio
+from typing import Tuple
 
 app = FastAPI()
+logger = logging.getLogger('uvicorn.error')
+
 
 # 設定 CORS 允許的來源
 origins = [
@@ -64,20 +71,24 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
     try:
         decoded_token = auth.verify_id_token(token)
+        logger.info(f"驗證成功，使用者 UID: {decoded_token['uid']}")
         return decoded_token
-    except firebase_admin._auth_utils.InvalidIdTokenError:
+    except firebase_admin._auth_utils.InvalidIdTokenError as e:
+        logger.error(f"無效的驗證令牌: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="無效的驗證令牌",
+            detail="無效的驗證令牌，可能是裝置時間不正確",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    except firebase_admin._auth_utils.ExpiredIdTokenError:
+    except firebase_admin._auth_utils.ExpiredIdTokenError as e:
+        logger.error(f"驗證令牌已過期: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="驗證令牌已過期",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    except Exception:
+    except Exception as e:
+        logger.error(f"無法驗證驗證令牌: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="無法驗證驗證令牌",
@@ -165,50 +176,122 @@ def read_root():
 
 class ChatRequest(BaseModel):
     query: str
+    context: list  # 新增 context 欄位
 
 @app.post("/api/chat")
-def chat(request: ChatRequest, user: dict = Depends(verify_token)):
+async def chat(request: ChatRequest, user: dict = Depends(verify_token)):
     user_query = request.query
+    user_context = request.context  # 獲取上下文資料
 
-    # 使用 ai_module 的功能
-    translated_query = translate_text(user_query)
-    print("\n翻譯後的英文查詢：")
-    print(translated_query)
-    print("\n" + "="*50 + "\n")
+    # 1. 判斷問題是否與性相關
+    sex_related = is_sex_related(user_query, claude_client, MODEL)
+    # sex_related = True
+    if sex_related:
+        logger.info("問題與性相關，執行向量檢索。")
+        # 處理上下文，例如整合上下文與當前查詢
+        recent_context = "\n".join([f"{'Robot' if msg['is_bot'] else 'User'}: {msg['message']}" for msg in user_context])
 
-    # 加載中文查詢嵌入
-    query_embedding_cn = load_query_embedding(user_query)
+        # 同時執行翻譯與加載查詢嵌入
+        translated_query_task = asyncio.create_task(translate_text_async(user_query))
+        query_embedding_cn_task = asyncio.create_task(load_query_embedding_async(user_query))
 
-    # 加載英文查詢嵌入
-    query_embedding_en = load_query_embedding(translated_query)
+        # 等待翻譯完成，以獲取英文查詢
+        translated_query = await translated_query_task
 
-    # 檢索相似中文文檔
-    dataset_id = "Eros_AI_RAG"
-    table_id = "combined_embeddings"
-    project_id = "eros-ai-446307"
-    similar_docs_cn = retrieve_similar_documents(
-        query_embedding_cn, dataset_id, table_id, project_id, top_n=2
-    )
+        # 使用翻譯後的英文查詢啟動英文嵌入的非同步任務
+        query_embedding_en_task = asyncio.create_task(load_query_embedding_async(translated_query))
 
-    # 檢索相似英文文檔
-    similar_docs_en = retrieve_similar_documents(
-        query_embedding_en, dataset_id, table_id, project_id, top_n=3
-    )
+        # 同時等待中文和英文的嵌入完成
+        query_embedding_cn, query_embedding_en = await asyncio.gather(
+            query_embedding_cn_task,
+            query_embedding_en_task
+        )
 
-    print(similar_docs_cn)
-    print(similar_docs_en)
+        logger.info(f"翻譯後的英文查詢：{translated_query}")
+        logger.info("="*50)
 
-    # 生成回答，整合中英文文獻
-    answer = generate_response(
-        similar_docs_cn,
-        similar_docs_en,
-        user_query,
-        claude_client,
-        MODEL
-    )
+        # 定義檢索參數
+        dataset_id = "Eros_AI_RAG"
+        table_id = "combined_embeddings"
+        project_id = "eros-ai-446307"
 
-    print("生成的回答：")
-    print(answer) 
-    print("\n" + "="*50 + "\n")
+        # 同時發起中文與英文的檢索請求（非同步）
+        similar_docs_cn_task = retrieve_similar_documents_async(
+            query_embedding_cn, dataset_id, table_id, project_id, top_n=2
+        )
+        similar_docs_en_task = retrieve_similar_documents_async(
+            query_embedding_en, dataset_id, table_id, project_id, top_n=3
+        )
+
+        similar_docs_cn, similar_docs_en = await asyncio.gather(
+            similar_docs_cn_task, similar_docs_en_task
+        )
+        
+        logger.info(f"中文相似文獻：{similar_docs_cn}")
+        logger.info(f"英文相似文獻：{similar_docs_en}") 
+        logger.info("="*50)
+
+        # 生成回答，整合中英文文獻與額外上下文
+        answer = generate_response(
+            similar_docs_cn,
+            similar_docs_en,
+            user_query,            # 使用合併後的查詢
+            recent_context,        # 傳遞額外的上下文資訊
+            claude_client,
+            MODEL
+        )
+
+        logger.info(f"生成的回答：{answer}")
+        logger.info("="*50)
+    else:
+        logger.info("問題非性相關，直接生成回答。")
+        answer = generate_direct_response(user_query, claude_client, MODEL)
 
     return {"response": answer}
+
+# 新增聊天記錄模型
+class ChatMessage(BaseModel):
+    message: str
+    is_bot: bool
+    timestamp: datetime.datetime
+
+@app.post("/api/chat/history")
+def save_chat_history(message: ChatMessage, user: dict = Depends(verify_token)):
+    try:
+        logger.info(f"保存聊天記錄，使用者 UID: {user['uid']}")
+
+        # 確保 timestamp 是 datetime 對象
+        if isinstance(message.timestamp, str):
+            message.timestamp = datetime.datetime.fromisoformat(message.timestamp)
+        
+        # 將訊息轉換為資料字典
+        message_data = {
+            'message': message.message,
+            'is_bot': message.is_bot,
+            'timestamp': message.timestamp
+        }
+
+        # 儲存到 Firestore，使用 merge=True 以合併資料
+        chat_history_ref = db.collection('chat_histories').document(user['uid'])
+        chat_history_ref.set({
+            'messages': firestore.ArrayUnion([message_data])
+        }, merge=True)
+        
+        logger.info(f"成功保存訊息：{message_data}")
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"儲存聊天記錄時出錯：{str(e)}")
+        raise HTTPException(status_code=500, detail=f"儲存聊天記錄時出錯：{str(e)}")
+
+@app.get("/api/chat/history")
+def get_chat_history(user: dict = Depends(verify_token)):
+    try:
+        chat_history_ref = db.collection('chat_histories').document(user['uid'])
+        doc = chat_history_ref.get()
+        
+        if not doc.exists:
+            return {"messages": []}
+            
+        return doc.to_dict()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"獲取聊天記錄時出錯：{str(e)}")
