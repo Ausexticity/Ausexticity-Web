@@ -3,7 +3,7 @@ const config = {
         API_BASE_URL: 'http://localhost:8000'
     },
     production: {
-        API_BASE_URL: 'https://eros-web-api.onrender.com'
+        API_BASE_URL: 'https://ausexticity-web-api.onrender.com'
     }
 };
 

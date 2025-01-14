@@ -30,7 +30,8 @@ logger = logging.getLogger('uvicorn.error')
 # 設定 CORS 允許的來源
 origins = [
     "http://127.0.0.1:5500",  # 前端開發伺服器
-    "https://eros-frontend.onrender.com",  # 前端生產環境
+    "https://ausexticity-frontend.onrender.com/",  # 前端生產環境
+    "https://ausexticity.com"
 ]
 
 app.add_middleware(
