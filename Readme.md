@@ -1,84 +1,149 @@
-# Adult Beauty Official Website
+# Ausexticity
 
-這是一個專注於成人美容話題的部落格平台，提供文章瀏覽、搜尋和會員系統功能。在開發過程中，得到了 Claude AI 的協助，特別是在前端模組化和錯誤處理方面。同時也使用了 GPT o1-mini 模型來優化搜尋功能和內容推薦系統 (亂講，我不是叫你這樣寫ㄉ)。
+## 專案簡介
+Ausexticity 是一個現代化的文章分享與知識交流平台，採用 FastAPI 作為後端框架，純 HTML/CSS/JavaScript 作為前端技術。專案特色是簡潔的設計風格、高效的性能表現，以及良好的使用者體驗。
 
 ## 技術棧
 
-### 前端
-- HTML5/CSS3
-- JavaScript (ES6+)
-- jQuery
-- AOS (Animate On Scroll Library)
-- Owl Carousel
+### 後端技術
+- FastAPI (Python Web 框架)
+- Firebase Admin SDK
+  - Firestore (資料庫)
+  - Storage (圖片儲存)
+  - Authentication (身份驗證)
+- Google Cloud Platform
+  - BigQuery
+  - Vertex AI
+  - Translation API
+- Anthropic Claude API (AI 對話)
+- Uvicorn (ASGI 伺服器)
+- Python 3.8+
 
-### 後端
-- FastAPI
-- Firebase Authentication
-- Firebase Realtime Database
-
-### 部署
-- Render (Free Plan)
-- Firebase Hosting
-
-## 目前功能
-
-### 文章系統
-- 文章列表顯示
-- 文章詳細頁面
-- 文章分類（NEWS等）
-- 文章搜尋（標題/內容）
-- 上一篇/下一篇導航
-
-### 使用者系統
-- 會員註冊/登入
-- 會員登出
-- 使用者認證狀態管理
-
-### 其他功能
+### 前端技術
+- HTML5
+- CSS3 (純 CSS，無框架)
+- JavaScript (原生 JS)
 - 響應式設計
-- 文章快取機制
-- 輪播圖展示
-- 動態載入效果
+- 模組化 CSS 架構
 
-## 待開發功能
+### 資料庫與儲存
+- Firestore (NoSQL 資料庫)
+- Firebase Storage (圖片儲存)
 
-### 後台管理
-- 文章發布系統
-- 文章編輯器
-- 使用者管理介面
-- 數據統計儀表板
+### 部署環境
+- 後端：Render
+- 前端：Render / Firebase Hosting
+- 域名：ausexticity.com
 
-### 資料庫優化
-- 文章標籤系統
-- 文章評論功能
-- 使用者互動記錄
-- 瀏覽數據追蹤
+## 主要功能
 
-### 使用者功能
-- 個人資料設定
-- 收藏文章功能
-- 訂閱通知系統
-- 會員等級制度
+### 1. 文章系統
+- 文章發布與編輯
+- 支援圖片上傳與預覽
+- 多標籤分類系統
+- 文章搜尋功能
 
-### 商業功能
-- 廣告系統
-- 贊助內容管理
-- 流量分析
-- 會員訂閱制
+### 2. 用戶系統
+- 會員註冊/登入
+- JWT 身份驗證
+- 個人文章管理
 
-### 技術優化
-- SEO 優化
-- 圖片壓縮和優化
-- CDN 整合
-- API 效能優化
+### 3. AI 對話功能
+- 基於 Claude 3.5 的智慧對話
+- 多語言支援（中英文）
+- 上下文理解
+- 知識庫檢索
+
+### 4. 特色功能
+- 拖放式圖片上傳
+- 即時標籤建議
+- 熱門標籤顯示
+- 響應式設計
+
+## 安裝說明
+
+### 後端設置
+1. 安裝 Python 依賴：
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+2. 設置環境變數：
+```bash
+cp .env.example .env
+# 編輯 .env 文件，填入必要的 API 金鑰和設定
+```
+
+3. 運行開發伺服器：
+```bash
+uvicorn main:app --reload
+```
+
+### 前端設置
+1. 使用任何 HTTP 伺服器啟動前端檔案，例如：
+```bash
+# 使用 Python 的簡易 HTTP 伺服器
+python -m http.server 5500
+```
+
+2. 或使用 VS Code 的 Live Server 擴充功能
+
+## 專案結構
+```
+Ausexticity/
+├── backend/
+│   ├── main.py              # FastAPI 主程式
+│   ├── ai_module.py         # AI 相關功能
+│   ├── requirements.txt     # Python 依賴
+│   └── credential.json      # Firebase 憑證
+├── frontend/
+│   ├── css/
+│   │   └── main.css        # 主要樣式檔
+│   ├── js/
+│   │   ├── post.js         # 文章發布相關
+│   │   ├── editor.js       # 編輯器功能
+│   │   └── misc.js         # 其他功能
+│   ├── images/             # 靜態圖片資源
+│   └── *.html             # HTML 頁面
+└── README.md
+```
+
+## API 文檔
+主要 API 端點：
+- POST /api/login - 用戶登入
+- POST /api/signup - 用戶註冊
+- GET /api/articles - 獲取文章列表
+- POST /api/articles - 發布新文章
+- PUT /api/articles/{id} - 更新文章
+- POST /api/upload_image - 上傳圖片
+- POST /api/chat - AI 對話
+- GET /api/chat/history - 獲取對話歷史
+
+## 設計規範
+
+### 配色方案
+- 主要色：#152F2B (深綠色)
+- 次要色：#E0D5C1 (米色)
+- 強調色：#954527 (磚紅色)
+- 背景色：#F1E3CB (淺米色)
+
+### 字體
+- 主要字體：Noto Sans TC
+- 特殊字體：Alatsi, DM Mono
+
+### 響應式設計
+- 桌面版：> 992px
+- 平板：768px - 992px
+- 手機：< 768px
 
 ## 開發團隊
-- 主要開發者
-- Claude AI（技術顧問）
-- GPT o1-mini（搜尋優化）
+- 前端開發：[開發者名稱]
+- 後端開發：[開發者名稱]
+- UI/UX 設計：[設計師名稱]
 
 ## 授權
-© 2023 Adult Beauty. All Rights Reserved.
+本專案採用 MIT 授權條款
 
 
 <!-- 
