@@ -811,11 +811,12 @@ main {
 }
 
 .section-login .block-login .outer-div .form-div .item input {
-  width: calc(100% - 30px);
-  padding: 0px 15px;
+  width: 100%;
+  height: 50px;
   border: 1px solid #BABABA;
-  border-radius: 10px;
-  min-height: 48px;
+  border-radius: 5px;
+  padding: 0 15px;
+  font-size: 16px;
 }
 
 .section-login .block-login .outer-div .form-div .item.forgot a {
@@ -831,18 +832,19 @@ main {
 }
 
 .section-login .block-login .outer-div .form-div .item.action button {
-  background-color: #0ACF83;
-  color: #fff;
   width: 100%;
-  padding: 15px;
+  height: 50px;
+  border: none;
+  border-radius: 5px;
+  background-color: #FF6B00;
+  color: #fff;
   font-size: 16px;
-  font-weight: 700;
-  border-radius: 10px;
-  min-height: 50px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .section-login .block-login .outer-div .form-div .item.action button:hover {
-  opacity: 0.5;
+  background-color: #FF8533;
 }
 
 .section-login .block-login .outer-div .form-div .item.remark {
@@ -852,11 +854,11 @@ main {
 }
 
 .section-login .block-login .outer-div .form-div .item.remark a {
-  color: #0ACF83;
+  color: #FF6B00;
 }
 
 .section-login .block-login .outer-div .form-div .item.remark a:hover {
-  opacity: 0.5;
+  color: #FF8533;
 }
 
 .section-article-list {
