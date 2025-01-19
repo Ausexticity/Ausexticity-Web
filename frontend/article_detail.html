@@ -119,6 +119,9 @@
                         <div class="col02">
                             <h5>${formatPublishedDate(article.published_at)}</h5>
                             <h2>${article.title}</h2>
+                            <div class="tags">
+                                ${article.tags ? article.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : ''}
+                            </div>
                             ${article.content.split('\n\n').map(paragraph => `<p>${paragraph}</p>`).join('')}
                         </div>
                     </div>
