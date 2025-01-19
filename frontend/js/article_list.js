@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // 加載用戶的文章
 export async function loadUserArticles() {
     try {
-        const articles = await fetchArticles(true);
+        const articles = await fetchArticles();
 
         // 假設你有用戶ID，可以根據用戶ID篩選文章
         const userId = getCurrentUserId(); // 你需要實現這個函數以獲取當前用戶ID

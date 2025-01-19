@@ -122,6 +122,7 @@ export async function submitArticle() {
 
         if (response.status === 201) {
             alert('文章發布成功');
+            fetchArticles(true);
             window.location.href = 'article_list.html';
         } else {
             const data = await response.json();
@@ -185,6 +186,7 @@ export async function updateArticle() {
 
         if (response.status === 200) {
             alert('文章更新成功');
+            fetchArticles(true);
             window.location.href = `article_detail.html?id=${articleId}`;
         } else {
             const data = await response.json();
