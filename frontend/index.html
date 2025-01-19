@@ -5,8 +5,13 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport"
         content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=yes,viewport-fit=cover">
-    <title>首頁 - Ausexticity@erossuccess.com</title>
-    <link rel="shortcut icon" href="images/favicon.png">
+    <title>首頁 - Ausexticity</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="images/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="images/favicon/favicon.ico">
+    <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="css/vendor/aos.css?ver=2023102401">
     <link rel="stylesheet" href="css/vendor/owl.carousel.css?ver=2023100726">
     <link rel="stylesheet" href="css/main.css?ver=2023102401">
@@ -18,14 +23,23 @@
         <div class="header-div">
             <div class="outer-div">
                 <div class="brand"><a href="index.html"><img src="images/header_logo.svg"><img
-                            src="images/adult_beauty.svg"></a></div>
+                            src="images/ausexticity.svg"></a></div>
                 <div class="links">
                     <div class="search-container">
-                        <input type="text" id="navSearchInput" placeholder="搜尋文章...">
-                        <i class="fas fa-search"></i>
-                        <button type="button" class="search-button" aria-label="搜尋">
+                        <div class="search-wrapper">
+                            <input type="text" id="navSearchInput" placeholder="搜尋文章...">
                             <i class="fas fa-search"></i>
-                        </button>
+                            <button type="button" class="search-button" aria-label="搜尋">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="search-suggestions" id="searchSuggestions" style="display: none;">
+                            <div class="popular-keywords">
+                                <h4>熱門搜尋</h4>
+                                <div class="keyword-list" id="popularKeywords"></div>
+                            </div>
+                            <div class="autocomplete-results" id="autocompleteResults"></div>
+                        </div>
                     </div>
                     <a href="login.html" class="login" id="login-link">LOGIN</a>
                     <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
@@ -37,8 +51,19 @@
     <main>
         <section class="section-home-banner">
             <div class="outer-div">
-                <div class="owl-carousel owl-theme owl-home-banner">
-                    <!-- 動態載入的 carousel 項目 -->
+                <div class="home-banner">
+                    <div class="banner-slider" id="bannerSlider">
+                        <!-- 動態載入的輪播項目將在這裡 -->
+                    </div>
+                    <div class="banner-controls" id="bannerControls">
+                        <!-- 動態載入的控制點將在這裡 -->
+                    </div>
+                    <div class="banner-nav banner-prev" id="prevButton">
+                        <i class="fas fa-chevron-left"></i>
+                    </div>
+                    <div class="banner-nav banner-next" id="nextButton">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
                 </div>
             </div>
         </section>
@@ -51,7 +76,7 @@
                         </div>
                         <div class="col02">
                             <div class="links">
-                                <div class="item">
+                                <!-- <div class="item">
                                     <div class="action">
                                         <a href="search.html">Search</a>
                                     </div>
@@ -59,7 +84,7 @@
                                         <h3>一鍵SEARCH讓你到達</h3>
                                         <p>大家都在問</p>
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="item">
                                     <div class="info">
                                         <h3>機器人在這裡</h3>
@@ -76,22 +101,21 @@
             <div class="block-02">
                 <div class="outer-div">
                     <h2>讓 Dr.告 訴 你</h2>
-                    <div class="new-lists" id="doctor-list">
-                        <!-- 動態載入的 doctor-list 文章 -->
-                    </div>
-                    <div class="new-lists">
+                    <div class="new-lists-wrapper">
+                        <div class="new-lists" id="doctor-list">
+                            <!-- 動態載入的 doctor-list 文章 -->
+                        </div>
                         <div class="more">
                             <a href="search.html?sort=latest">更多</a>
                         </div>
                     </div>
                 </div>
             </div>
-            </div>
             <div class="block-contact">
                 <div class="outer-div">
                     <div class="title"><img src="images/footer_title_contact.svg"></div>
                     <div class="info">
-                        <p>Ausexticity@erossuccess.com</p>
+                        <p>care@ausexticity.com</p>
                     </div>
                 </div>
             </div>
@@ -102,65 +126,38 @@
 
     <script src="js/jquery.min.js"></script>
     <script src="js/aos.js"></script>
-    <script src="js/owl.carousel.js"></script>
-
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/misc.js"></script>
     <script type="module" src="js/script.js"></script>
     <script type="module" src="js/nav-search.js"></script>
     <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/banner.js"></script>
     <script type="module">
         import { updateHeader } from './js/misc.js';
         import { fetchArticles } from './js/misc.js';
         import { truncateTitle } from './js/misc.js';
-        import { initializeOwlCarousel } from './js/script.js';
+        import { initializeBanner } from './js/banner.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             updateHeader();
 
             try {
-                // 動態載入 Owl Carousel 的 JavaScript 檔案
-                function loadScript(url) {
-                    return new Promise((resolve, reject) => {
-                        const script = document.createElement('script');
-                        script.type = 'text/javascript';
-                        script.src = url;
-                        script.onload = () => resolve();
-                        script.onerror = () => reject(new Error('無法載入腳本: ' + url));
-                        document.body.appendChild(script);
-                    });
-                }
-
                 // 獲取文章資料
                 const articles = await fetchArticles();
 
-                // 處理 NEWS 類別的文章並載入到 Owl Carousel
-                const carousel = document.querySelector('.owl-carousel.owl-home-banner');
-                // 清空現有的 carousel 內容
-                carousel.innerHTML = '';
+                // 初始化輪播
+                initializeBanner(articles);
 
-                articles.forEach(article => {
-                    if (article.category === "NEWS") {
-                        const itemElement = document.createElement('div');
-                        itemElement.classList.add('item');
+                // 設置輪播按鈕事件監聽
+                document.getElementById('prevButton').addEventListener('click', () => {
+                    if (typeof window.prevSlide === 'function') {
+                        window.prevSlide();
+                    }
+                });
 
-                        itemElement.innerHTML = `
-                            <div class="two-cols">
-                                <div class="col01">
-                                    <div class="img" style="background-image: url(${article.image_url || 'images/pexels-aryane-vilarim-2869078-1.png'});">
-                                        <img src="images/home_news_transparent.gif" alt="News Image">
-                                    </div>
-                                </div>
-                                <div class="col02">
-                                    <a href="article_detail.html?id=${article.id}">
-                                        <h1>${truncateTitle(article.title, 6)}</h1>
-                                        <p>${article.content || '內文內文內文內文 內文內文內文'}</p>
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-
-                        carousel.appendChild(itemElement);
+                document.getElementById('nextButton').addEventListener('click', () => {
+                    if (typeof window.nextSlide === 'function') {
+                        window.nextSlide();
                     }
                 });
 
@@ -184,17 +181,8 @@
                     }
                 });
 
-                // 動態載入 Owl Carousel 並初始化
-                await loadScript('js/owl.carousel.js?ver=2023100726');
-
-                // 呼叫 script.js 中的初始化函數
-                if (typeof initializeOwlCarousel === 'function') {
-                    initializeOwlCarousel();
-                }
-
             } catch (error) {
                 console.error('獲取文章資料失敗:', error);
-                // 可以在這裡添加錯誤提示給使用者
             }
         });
     </script>
