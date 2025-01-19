@@ -36,14 +36,14 @@
                         <div class="search-suggestions" id="searchSuggestions" style="display: none;">
                             <div class="popular-keywords">
                                 <h4>熱門搜尋</h4>
-                                <div class="keyword-list" id="popularKeywords"></div>
+                                <div class="keyword-list" id="popularTags"></div>
                             </div>
                             <div class="autocomplete-results" id="autocompleteResults"></div>
                         </div>
                     </div>
                     <a href="login.html" class="login" id="login-link">LOGIN</a>
                     <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
-                        style="display: none;">
+                        style="display: none; cursor: pointer;" />
                 </div>
             </div>
         </div>
@@ -128,10 +128,14 @@
     <script src="js/aos.js"></script>
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/misc.js"></script>
-    <script type="module" src="js/script.js"></script>
+    <!-- <script type="module" src="js/post.js?ver=2023102401"></script> -->
     <script type="module" src="js/nav-search.js"></script>
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/banner.js"></script>
+    <script type="module" src="js/index.js"></script>
+    <script>
+        AOS.init();
+    </script>
     <script type="module">
         import { updateHeader } from './js/misc.js';
         import { fetchArticles } from './js/misc.js';
@@ -185,9 +189,6 @@
                 console.error('獲取文章資料失敗:', error);
             }
         });
-    </script>
-    <script>
-        AOS.init();
     </script>
 </body>
 

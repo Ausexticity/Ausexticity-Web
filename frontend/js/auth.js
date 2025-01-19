@@ -18,6 +18,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// 定義並導出 getCurrentUserId 函數
+function getCurrentUserId() {
+    return localStorage.getItem('userId');
+}
+
 async function signup(username, password) {
     try {
         const response = await fetch(`${API_BASE_URL}/api/signup`, {
@@ -53,13 +58,8 @@ async function login(username, password) {
     try {
         const response = await fetch(`${API_BASE_URL}/api/login`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password
-            }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
         });
 
         const data = await response.json();
@@ -91,7 +91,7 @@ async function loginWithCustomToken(customToken) {
 
         // 將 ID Token 儲存到 localStorage
         localStorage.setItem('idToken', idToken);
-
+        localStorage.setItem('userId', user.uid);
         console.log('登入成功，ID Token:', idToken);
     } catch (error) {
         console.error('使用自訂令牌登入失敗:', error);
@@ -103,6 +103,7 @@ function logout() {
     signOut(auth).then(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('idToken');
+        localStorage.removeItem('userId'); // 確保移除 userId
         // 可選：刷新頁面或跳轉到首頁
         window.location.href = 'index.html';
     }).catch((error) => {
@@ -158,8 +159,13 @@ auth.onAuthStateChanged(async (user) => {
         }
     } else {
         localStorage.removeItem('idToken');
+        localStorage.removeItem('userId'); // 確保移除 userId
     }
 });
 
+function isLoggedIn() {
+    return !!localStorage.getItem('idToken');
+}
+
 // 導出函數供其他模組使用
-export { signup, login, logout, sendChatRequest, auth };
+export { signup, login, logout, sendChatRequest, auth, isLoggedIn, getCurrentUserId };

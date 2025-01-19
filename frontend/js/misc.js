@@ -1,5 +1,5 @@
 import { API_BASE_URL } from './config.js';
-import { logout } from './auth.js';
+import { logout, getCurrentUserId } from './auth.js';
 
 // 定義 LocalStorage 鍵名
 const ARTICLES_KEY = 'articles';
@@ -11,33 +11,34 @@ function updateHeader() {
     const loginLink = document.getElementById('login-link');
     const userIcon = document.getElementById('user-icon');
 
-    if (token) {
-        loginLink.style.display = 'none';
-        userIcon.style.display = 'block';
+    if (loginLink && userIcon) {
+        if (token) {
+            loginLink.style.display = 'none';
+            userIcon.style.display = 'block';
 
-        // 先移除所有已存在的點擊事件
-        const oldUserIcon = userIcon.cloneNode(true);
-        userIcon.parentNode.replaceChild(oldUserIcon, userIcon);
+            // 先移除所有已存在的點擊事件
+            const oldUserIcon = userIcon.cloneNode(true);
+            userIcon.parentNode.replaceChild(oldUserIcon, userIcon);
 
-        // 添加新的點擊事件
-        oldUserIcon.addEventListener('click', () => {
-            if (confirm('是否登出？')) {
-                logout();
-            }
-        });
-    } else {
-        loginLink.style.display = 'block';
-        userIcon.style.display = 'none';
+            // 添加新的點擊事件，導向管理頁面
+            oldUserIcon.addEventListener('click', () => {
+                window.location.href = 'admin.html';
+            });
+        } else {
+            loginLink.style.display = 'block';
+            userIcon.style.display = 'none';
+        }
     }
 }
 
 // 獲取文章資料，使用 LocalStorage 進行快取
-async function fetchArticles() {
+async function fetchArticles(force = false) {
     const cachedArticles = localStorage.getItem(ARTICLES_KEY);
     const cachedTimestamp = localStorage.getItem(ARTICLES_TIMESTAMP_KEY);
     const now = Date.now();
 
-    if (cachedArticles && cachedTimestamp && (now - cachedTimestamp < CACHE_DURATION)) {
+    // 如果不強制且快取存在且未過期，使用快取
+    if (!force && cachedArticles && cachedTimestamp && (now - cachedTimestamp < CACHE_DURATION)) {
         console.log('使用快取的文章資料');
         return JSON.parse(cachedArticles);
     }
@@ -68,7 +69,6 @@ async function fetchArticles() {
         return cachedArticles ? JSON.parse(cachedArticles) : [];
     }
 }
-
 
 // 格式化發佈日期的函式
 function formatPublishedDate(publishedAt) {
@@ -105,4 +105,45 @@ document.addEventListener('DOMContentLoaded', () => {
     updateHeader();
     scheduleArticleUpdate();
 });
+
+/**
+ * 上傳圖片到後端並返回圖片的 URL
+ * @returns {Promise<string|null>} 圖片的 URL 或 null
+ */
+export async function uploadImage() {
+    const fileInput = document.getElementById('image-upload');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert('請選擇一張圖片進行上傳。');
+        return null;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/upload_image`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+            },
+            body: formData
+        });
+
+        if (response.status === 200) {
+            const data = await response.json();
+            return data.image_url;
+        } else {
+            const errorData = await response.json();
+            alert(`圖片上傳失敗: ${errorData.detail}`);
+            return null;
+        }
+    } catch (error) {
+        console.error('圖片上傳時發生錯誤:', error);
+        alert('圖片上傳時發生錯誤，請稍後再試。');
+        return null;
+    }
+}
+
 export { updateHeader, fetchArticles, formatPublishedDate, truncateTitle };

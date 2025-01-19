@@ -2,24 +2,25 @@ import { API_BASE_URL } from './config.js';
 import { fetchArticles } from './misc.js';
 
 let articles = [];
-let popularKeywords = ['性健康', '性教育', '兩性關係', '性別平等', '性知識'];
+let popularTags = [];
 
 // 初始化搜尋功能
 async function initializeSearch() {
     const searchInput = document.getElementById('navSearchInput');
     const suggestionsDiv = document.getElementById('searchSuggestions');
-    const popularKeywordsDiv = document.getElementById('popularKeywords');
+    const popularTagsDiv = document.getElementById('popularTags');
     const autocompleteResultsDiv = document.getElementById('autocompleteResults');
 
     // 載入文章數據
     try {
         articles = await fetchArticles();
+        generatePopularTags();
     } catch (error) {
         console.error('無法載入文章:', error);
     }
 
-    // 顯示熱門關鍵字
-    displayPopularKeywords();
+    // 顯示熱門標籤
+    displayPopularTags();
 
     // 監聽搜尋輸入
     searchInput.addEventListener('input', debounce(handleSearchInput, 300));
@@ -33,17 +34,40 @@ async function initializeSearch() {
 
     // 監聽搜尋框焦點
     searchInput.addEventListener('focus', () => {
-        if (searchInput.value.trim() || popularKeywords.length > 0) {
+        if (searchInput.value.trim() || popularTags.length > 0) {
             suggestionsDiv.style.display = 'block';
         }
     });
 }
 
-// 顯示熱門關鍵字
-function displayPopularKeywords() {
-    const popularKeywordsDiv = document.getElementById('popularKeywords');
-    popularKeywordsDiv.innerHTML = popularKeywords
-        .map(keyword => `<span onclick="handleKeywordClick('${keyword}')">${keyword}</span>`)
+// 生成熱門標籤
+function generatePopularTags() {
+    const tagCount = {};
+    articles.forEach(article => {
+        if (Array.isArray(article.tags)) {
+            article.tags.forEach(tag => {
+                tagCount[tag] = (tagCount[tag] || 0) + 1;
+            });
+        } else {
+            console.warn(`文章 ID ${article.id} 沒有標籤或標籤格式錯誤。`);
+        }
+    });
+
+    // 將標籤按頻率排序，取前五個作為熱門標籤
+    popularTags = Object.keys(tagCount)
+        .sort((a, b) => tagCount[b] - tagCount[a])
+        .slice(0, 5);
+}
+
+// 顯示熱門標籤
+function displayPopularTags() {
+    const popularTagsDiv = document.getElementById('popularTags');
+    if (!popularTagsDiv) {
+        console.warn('找不到 ID 為 "popularTags" 的元素。請確認 HTML 中存在該元素。');
+        return;
+    }
+    popularTagsDiv.innerHTML = popularTags
+        .map(tag => `<span onclick="handleTagClick('${tag}')">${tag}</span>`)
         .join('');
 }
 
@@ -55,14 +79,15 @@ function handleSearchInput(e) {
 
     if (searchTerm.length === 0) {
         autocompleteResultsDiv.innerHTML = '';
-        suggestionsDiv.style.display = popularKeywords.length > 0 ? 'block' : 'none';
+        suggestionsDiv.style.display = popularTags.length > 0 ? 'block' : 'none';
         return;
     }
 
     // 搜尋文章
     const matchingArticles = articles.filter(article =>
         article.title.toLowerCase().includes(searchTerm) ||
-        article.content.toLowerCase().includes(searchTerm)
+        article.content.toLowerCase().includes(searchTerm) ||
+        (Array.isArray(article.tags) && article.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
     ).slice(0, 5);
 
     // 顯示搜尋結果
@@ -82,10 +107,10 @@ function handleSearchInput(e) {
     }
 }
 
-// 關鍵字點擊處理
-window.handleKeywordClick = function (keyword) {
+// 標籤點擊處理
+window.handleTagClick = function (tag) {
     const searchInput = document.getElementById('navSearchInput');
-    searchInput.value = keyword;
+    searchInput.value = tag;
     searchInput.dispatchEvent(new Event('input'));
 };
 

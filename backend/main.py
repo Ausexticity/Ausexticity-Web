@@ -1,8 +1,8 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 import firebase_admin
-from firebase_admin import credentials, auth, firestore
+from firebase_admin import credentials, auth, firestore, storage
 from fastapi.middleware.cors import CORSMiddleware
 import bcrypt
 import datetime
@@ -21,7 +21,7 @@ from ai_module import (
 )
 import logging
 import asyncio
-from typing import Tuple
+from typing import Tuple, Optional
 
 app = FastAPI()
 logger = logging.getLogger('uvicorn.error')
@@ -46,12 +46,16 @@ app.add_middleware(
 
 # 初始化 Firebase Admin SDK
 cred = credentials.Certificate("credential.json")
-firebase_admin.initialize_app(cred)
+firebase_admin.initialize_app(cred, {
+    'storageBucket': 'eros-web-94e22.firebasestorage.app'  # 移除了 'gs://'
+})
 
 # 初始化 Firestore 客戶端
 db = firestore.client()
 users_collection = db.collection('users')
 articles_collection = db.collection('articles')
+
+bucket = storage.bucket()
 
 # 載入環境變數
 try:
@@ -158,20 +162,20 @@ def signup(request: SignupRequest):
         raise HTTPException(status_code=500, detail=f"生成令牌時出錯:{e}")
 
 @app.get("/api/articles")
-def get_articles():
+def get_articles(user_id: Optional[str] = None):
     try:
+        if user_id:
+            query = articles_collection.where('user_id', '==', user_id)
+        else:
+            query = articles_collection.stream()
         articles = []
-        docs = articles_collection.stream()
-        for doc in docs:
+        for doc in query:
             article = doc.to_dict()
             article['id'] = doc.id
-            # 將 Firestore 的 Timestamp 轉換為字符串格式
-            if isinstance(article.get('published_at'), datetime.datetime):
-                article['published_at'] = article['published_at'].isoformat()
             articles.append(article)
         return {"articles": articles}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"獲取文章時出錯:{e}")
+        raise HTTPException(status_code=500, detail=f"獲取文章時出錯: {e}")
 
 @app.get("/api/hello")
 def read_root():
@@ -301,3 +305,60 @@ def get_chat_history(user: dict = Depends(verify_token)):
         return doc.to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"獲取聊天記錄時出錯：{str(e)}")
+
+# 定義文章資料模型
+class Article(BaseModel):
+    title: str
+    content: str
+    tags: list[str]  # 將 category 改為 tags，並使用列表來儲存多個標籤
+    image_url: str = None
+    user_id: str = None
+    published_at: datetime.datetime = None
+
+# 發布新文章的端點
+@app.post("/api/articles", dependencies=[Depends(verify_token)], status_code=201)
+def create_article(article: Article):
+    try:
+        article_dict = article.dict()
+        article_dict['published_at'] = datetime.datetime.utcnow()
+        doc_ref = articles_collection.add(article_dict)
+        article_id = doc_ref[1].id
+        return {"id": article_id, "message": "文章發布成功"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"發布文章時出錯: {e}")
+
+# 編輯現有文章的端點
+@app.put("/api/articles/{article_id}", dependencies=[Depends(verify_token)])
+def update_article(article_id: str, article: Article):
+    try:
+        doc_ref = articles_collection.document(article_id)
+        if not doc_ref.get().exists:
+            raise HTTPException(status_code=404, detail="找不到該文章")
+        article_dict = article.dict(exclude_unset=True)
+        article_dict['published_at'] = datetime.datetime.utcnow()
+        doc_ref.update(article_dict)
+        return {"message": "文章更新成功"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"更新文章時出錯: {e}")
+
+@app.post("/api/upload_image")
+async def upload_image(image: UploadFile = File(...), user: dict = Depends(verify_token)):
+    if not image.content_type.startswith('image/'):
+        raise HTTPException(status_code=400, detail="請上傳有效的圖片檔案。")
+    
+    try:
+        # 生成唯一的檔案名稱
+        file_extension = os.path.splitext(image.filename)[1]
+        blob = bucket.blob(f"images/{user['uid']}/{datetime.datetime.utcnow().isoformat()}_{image.filename}")
+
+        # 上傳圖片到 Firebase Storage
+        blob.upload_from_file(image.file, content_type=image.content_type)
+        # 設定公開讀取權限
+        blob.make_public()
+
+        return {"image_url": blob.public_url}
+    except Exception as e:
+        logger.error(f"上傳圖片時出錯: {str(e)}")
+        raise HTTPException(status_code=500, detail="上傳圖片時發生錯誤。")

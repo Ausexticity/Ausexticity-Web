@@ -32,12 +32,12 @@
                         <div class="search-suggestions" id="searchSuggestions" style="display: none;">
                             <div class="popular-keywords">
                                 <h4>熱門搜尋</h4>
-                                <div class="keyword-list" id="popularKeywords"></div>
+                                <div class="keyword-list" id="popularTags"></div>
                             </div>
                             <div class="autocomplete-results" id="autocompleteResults"></div>
                         </div>
                     </div>
-                    <a href="#" class="account">MY ACCOUNT</a>
+                    <a href="admin.html" class="account">MY ACCOUNT</a>
                 </div>
             </div>
         </div>
@@ -76,7 +76,7 @@
     <script src="js/aos.js?ver=2023102401"></script>
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/misc.js"></script>
-    <script type="module" src="js/script.js?ver=2023102401"></script>
+    <script type="module" src="js/post.js?ver=2023102401"></script>
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/nav-search.js"></script>
     <script type="module">
@@ -114,7 +114,7 @@
                 articleContent.innerHTML = `
                     <div class="item">
                         <div class="col01">
-                            <img src="${article.imageUrl || 'images/default_detail_img.png'}" alt="文章圖片">
+                            <img src="${article.image_url || 'images/default_detail_img.png'}" alt="文章圖片">
                         </div>
                         <div class="col02">
                             <h5>${formatPublishedDate(article.published_at)}</h5>
