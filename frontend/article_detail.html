@@ -96,7 +96,7 @@
                 }
 
                 // 獲取所有文章資料
-                const articles = await fetchArticles();
+                const articles = await fetchArticles(true);
 
                 // 找到對應的文章索引
                 const articleIndex = articles.findIndex(a => a.id === articleId);

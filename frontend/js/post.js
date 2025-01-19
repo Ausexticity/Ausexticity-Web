@@ -131,7 +131,7 @@ function handleTagKeydown(e) {
 }
 
 // 添加標籤
-function addTag(tag) {
+export function addTag(tag) {
 	if (!selectedTags.has(tag)) {
 		selectedTags.add(tag);
 		updateSelectedTags();
@@ -141,13 +141,13 @@ function addTag(tag) {
 }
 
 // 移除標籤
-function removeTag(tag) {
+export function removeTag(tag) {
 	selectedTags.delete(tag);
 	updateSelectedTags();
 }
 
 // 更新已選擇的標籤顯示
-function updateSelectedTags() {
+export function updateSelectedTags() {
 	const container = document.querySelector('.selected-tags');
 	container.innerHTML = Array.from(selectedTags)
 		.map(tag => `
@@ -160,7 +160,7 @@ function updateSelectedTags() {
 }
 
 // 更新熱門標籤顯示
-function updatePopularTags() {
+export function updatePopularTags() {
 	const popularTags = Array.from(allTags).slice(0, 8); // 顯示前8個標籤
 	const container = document.getElementById('popularTags');
 	container.innerHTML = popularTags
@@ -168,8 +168,6 @@ function updatePopularTags() {
 		.join('');
 }
 
-// 其他原有的代碼...
-// ... existing code ...
 
 // 將需要在全域使用的函數掛載到 window 對象上
 window.readURL = readURL;

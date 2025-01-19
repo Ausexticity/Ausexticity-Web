@@ -2,7 +2,7 @@ import { API_BASE_URL } from './config.js';
 import { isLoggedIn, getCurrentUserId } from './auth.js';
 import { uploadImage } from './misc.js';
 import { formatPublishedDate, fetchArticles } from './misc.js';
-import { readURL, getSelectedTags } from './post.js';
+import { readURL, getSelectedTags, addTag } from './post.js';
 
 // 獲取 URL 中的 id 參數以判斷是否為編輯模式
 const urlParams = new URLSearchParams(window.location.search);
