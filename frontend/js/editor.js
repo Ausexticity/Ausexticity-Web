@@ -47,7 +47,7 @@ export async function fetchArticleDetails(id) {
 
     if (userArticles.length === 0) {
         alert('找不到指定的文章。');
-        window.location.href = 'article_list.html';
+        window.location.href = 'search.html?user_id=' + getCurrentUserId() + '&edit=true';
         return;
     }
     populateForm(userArticles[0]);

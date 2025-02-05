@@ -1024,6 +1024,11 @@ main {
   line-height: 1.4;
   margin: 0;
   flex: 1;
+  /* 新增以下屬性 */
+  text-align: left;
+  white-space: normal;
+  word-spacing: normal;
+  text-justify: none;
 }
 
 .section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions {
