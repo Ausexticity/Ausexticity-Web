@@ -158,8 +158,10 @@ export async function deleteImage(imageUrl) {
         const response = await fetch(`${API_BASE_URL}/api/delete_image`, {
             method: 'DELETE',
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('idToken')}`
-            }
+            },
+            body: JSON.stringify({ image_url: imageUrl })
         });
 
         if (response.status === 200) {

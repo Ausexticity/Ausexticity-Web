@@ -47,11 +47,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // 將關鍵字轉換成小寫並移除前後空白
+        const lowerKeyword = keyword.toLowerCase().trim();
+
         const articles = await fetchArticles();
         const results = articles.filter(article => {
-            const matchTitle = article.title.toLowerCase().includes(keyword);
-            const matchContent = article.content.toLowerCase().includes(keyword);
-            return matchTitle || matchContent;
+            const matchTitle = article.title.toLowerCase().includes(lowerKeyword);
+            const matchContent = article.content.toLowerCase().includes(lowerKeyword);
+
+            // 確認 article.tags 存在，且是一個陣列
+            const matchTags = article.tags && Array.isArray(article.tags)
+                ? article.tags.some(tag => tag.toLowerCase().includes(lowerKeyword))
+                : false;
+
+            // 除錯用：可以暫時取消下面的註解，檢查每筆文章的 tags 與 lowerKeyword
+            // console.log('文章 tags:', article.tags, '搜尋關鍵字:', lowerKeyword);
+
+            return matchTitle || matchContent || matchTags;
         });
 
         displayResults(results, keyword);
@@ -159,6 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const tagSpan = document.createElement('span');
                     tagSpan.className = 'tag';
                     tagSpan.textContent = tag;
+                    tagSpan.style.cursor = 'pointer';
+                    tagSpan.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.location.href = `search.html?q=${encodeURIComponent(tag)}`;
+                    });
                     tagsDiv.appendChild(tagSpan);
                 });
                 contentDiv.appendChild(tagsDiv);

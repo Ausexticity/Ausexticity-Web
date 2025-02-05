@@ -1,6 +1,6 @@
 import { API_BASE_URL } from './config.js';
 import { isLoggedIn, getCurrentUserId } from './auth.js';
-import { uploadImage } from './misc.js';
+import { uploadImage, deleteImage } from './misc.js';
 import { formatPublishedDate, fetchArticles } from './misc.js';
 import { readURL, getSelectedTags, addTag } from './post.js';
 
@@ -187,6 +187,10 @@ export async function updateArticle() {
         });
 
         if (response.status === 200) {
+            // 如果有上傳新圖片且原本有圖片則刪除舊照片
+            if (originalImageUrl && originalImageUrl !== imageUrl) {
+                await deleteImage(originalImageUrl);
+            }
             alert('文章更新成功');
             await fetchArticles(true);
             window.location.href = `article_detail.html?id=${articleId}`;
