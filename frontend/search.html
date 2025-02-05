@@ -6,7 +6,12 @@
     <meta name="viewport"
         content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=yes,viewport-fit=cover">
     <title>搜尋 - Ausexticity</title>
-    <link rel="shortcut icon" href="images/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="images/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="images/favicon/favicon.ico">
+    <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="css/vendor/aos.css?ver=2023102401">
     <link rel="stylesheet" href="css/main.css?ver=2023102401">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous">
@@ -16,17 +21,26 @@
     <header>
         <div class="header-div">
             <div class="outer-div">
-                <div class="brand">
-                    <a href="index.html">
-                        <img src="images/header_logo.svg">
-                        <img src="images/ausexticity.svg">
-                    </a>
+                <div class="links">
+                    <a href="index.html" class="home">HOME</a>
                 </div>
                 <div class="links">
+                    <div class="search-container">
+                        <div class="search-wrapper">
+                            <input type="text" id="navSearchInput" placeholder="搜尋文章...">
+                            <i id="navSearchButton" class="fas fa-search"></i>
+                        </div>
+                        <div class="search-suggestions" id="searchSuggestions" style="display: none;">
+                            <div class="popular-keywords">
+                                <h4>熱門搜尋</h4>
+                                <div class="keyword-list" id="popularTags"></div>
+                            </div>
+                            <div class="autocomplete-results" id="autocompleteResults"></div>
+                        </div>
+                    </div>
                     <a href="login.html" class="login" id="login-link">LOGIN</a>
                     <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
                         style="display: none;">
-
                 </div>
             </div>
         </div>
@@ -37,21 +51,11 @@
             <div class="block-article-list">
                 <div class="outer-div">
                     <div class="block-02">
-                        <h2>搜尋文章</h2>
-                        <div class="search-div">
-                            <input type="text" id="searchInput" placeholder="請輸入關鍵字...">
-                            <button type="button" id="searchButton">搜尋</button>
-                        </div>
-                        <div class="search-options" style="text-align: center; margin: 20px 0;">
-                            <label style="margin-right: 20px; color: #686868;">
-                                <input type="checkbox" id="searchTitle" checked> 搜尋標題
-                            </label>
-                            <label style="color: #686868;">
-                                <input type="checkbox" id="searchContent" checked> 搜尋內容
-                            </label>
-                        </div>
-                        <div class="search-result-lists" id="searchResults">
-                            <!-- 搜尋結果將在這裡動態插入 -->
+                        <h2 id="search-heading">所有文章</h2>
+                    </div>
+                    <div class="block-02">
+                        <!-- 搜尋結果列表 -->
+                        <div class="search-result-lists">
                         </div>
                     </div>
                 </div>
@@ -76,7 +80,6 @@
     <script type="module" src="js/script.js"></script>
     <script type="module" src="js/search.js"></script>
     <script type="module" src="js/nav-search.js"></script>
-    <script type="module" src="js/post.js?ver=2023102401"></script>
     <script>
         AOS.init();
     </script>

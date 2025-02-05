@@ -4,86 +4,53 @@ import { fetchArticles, formatPublishedDate, updateHeader } from './misc.js';
 // 搜尋功能實現
 document.addEventListener('DOMContentLoaded', () => {
 
-    // 先宣告並獲取所有需要的 DOM 元素
-    const searchInput = document.getElementById('searchInput');
-    const searchButton = document.getElementById('searchButton');
-    const searchResults = document.getElementById('searchResults');
-    const searchTitle = document.getElementById('searchTitle');
-    const searchContent = document.getElementById('searchContent');
-
-    // 檢查 URL 參數
-    const urlParams = new URLSearchParams(window.location.search);
-    const searchTerm = urlParams.get('q');
-    const sort = urlParams.get('sort');
-
-    // 檢查 localStorage 中的待處理搜尋
-    const pendingSearch = localStorage.getItem('pendingSearch');
-
-    if (searchTerm || pendingSearch) {
-        const termToUse = searchTerm || pendingSearch;
-
-        if (searchInput && searchButton) {
-            searchInput.value = termToUse;
-
-            // 清除待處理的搜尋
-            localStorage.removeItem('pendingSearch');
-
-            // 延遲執行搜尋，確保頁面和相關 JS 都已載入
-            setTimeout(() => {
-                searchButton.click();
-            }, 300);
-        }
-    }
-
-    // 如果是從"更多"連結過來的（sort=latest）
-    if (sort === 'latest') {
-        // 清空搜尋框
-        if (searchInput) {
-            searchInput.value = '';
-        }
-        // 確保兩個複選框都被勾選
-        if (searchTitle && searchContent) {
-            searchTitle.checked = true;
-            searchContent.checked = true;
-        }
-        // 立即顯示所有文章
-        displayAllArticles();
-    }
-
+    // searchResult
+    const searchResults = document.querySelector('.search-result-lists');
+    const searchHeading = document.querySelector('#search-heading');
     // 更新頁面頭部的登入狀態
     updateHeader();
 
-    // 綁定搜尋按鈕點擊事件
-    if (searchButton) {
-        searchButton.addEventListener('click', performSearch);
+    // 根據 URL 參數 q 執行搜尋，若無 query 則顯示全部文章
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get('q');
+    const userId = urlParams.get('userId');
+    const edit = urlParams.get('edit');
+
+    if (userId) {
+        searchHeading.innerHTML = '我的文章';
+        displayUserArticles(userId);
+    } else if (query) {
+        performSearch(query);
+    } else {
+        displayAllArticles();
     }
 
-    // 綁定輸入框的 Enter 鍵事件
-    if (searchInput) {
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
+    // 暴露 performSearch 供外部（如 nav-search.js）調用
+    window.performSearch = performSearch;
+
+    async function displayUserArticles(userId) {
+        try {
+            const articles = await fetchArticles();
+            const userArticles = articles.filter(article => article.user_id === userId);
+
+            displayResults(userArticles, '');
+        } catch (error) {
+            console.error('載入用戶文章失敗:', error);
+            showErrorMessage('載入文章失敗，請稍後再試。');
+        }
     }
 
     // 執行搜尋
-    async function performSearch() {
-        const keyword = searchInput.value.trim().toLowerCase();
+    async function performSearch(keyword) {
         if (!keyword) {
             alert('請輸入搜尋關鍵字');
             return;
         }
 
-        if (!searchTitle.checked && !searchContent.checked) {
-            alert('請至少選擇一個搜尋範圍');
-            return;
-        }
-
         const articles = await fetchArticles();
         const results = articles.filter(article => {
-            const matchTitle = searchTitle.checked && article.title.toLowerCase().includes(keyword);
-            const matchContent = searchContent.checked && article.content.toLowerCase().includes(keyword);
+            const matchTitle = article.title.toLowerCase().includes(keyword);
+            const matchContent = article.content.toLowerCase().includes(keyword);
             return matchTitle || matchContent;
         });
 
@@ -123,62 +90,70 @@ document.addEventListener('DOMContentLoaded', () => {
         results.forEach(article => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'item';
+            itemDiv.style.cursor = 'pointer';
 
+            // 建立圖片區塊 (box)
             const boxDiv = document.createElement('div');
             boxDiv.className = 'box';
-            boxDiv.style.position = 'relative';
-            boxDiv.style.overflow = 'hidden';
 
-            // 創建圖片區域
             const imgDiv = document.createElement('div');
             imgDiv.className = 'img';
-            imgDiv.style.backgroundImage = `url(${article.image_url || 'images/pexels-aryane-vilarim-2869078-1.png'})`;
-            imgDiv.style.backgroundPosition = 'center';
-            imgDiv.style.backgroundRepeat = 'no-repeat';
-            imgDiv.style.backgroundSize = 'cover';
-            const img = document.createElement('img');
-            img.src = article.image_url || 'images/pexels-aryane-vilarim-2869078-1.png';
-            img.alt = article.title;
-            img.style.width = '100%';
-            imgDiv.appendChild(img);
+            const imageUrl = article.image_url || 'images/pexels-aryane-vilarim-2869078-1.png';
+            imgDiv.style.backgroundImage = `url(${imageUrl})`;
             boxDiv.appendChild(imgDiv);
-
-            // 創建資訊區域
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'info';
-            infoDiv.style.position = 'absolute';
-            infoDiv.style.left = '0';
-            infoDiv.style.bottom = '0';
-            infoDiv.style.width = 'calc(100% - 20px)';
-            infoDiv.style.padding = '10px';
-            infoDiv.style.background = 'rgba(255, 255, 255, 0.9)';
-
-            const title = document.createElement('h3');
-            title.innerHTML = keyword
-                ? highlightKeyword(article.title, keyword)
-                : article.title;
-            title.style.fontSize = '16px';
-            title.style.fontWeight = '700';
-            title.style.color = '#000';
-            title.style.margin = '0';
-
-            const date = document.createElement('p');
-            date.textContent = formatPublishedDate(article.published_at);
-            date.style.fontSize = '14px';
-            date.style.color = 'rgba(0, 0, 0, 0.8)';
-            date.style.margin = '5px 0 0 0';
-
-            infoDiv.appendChild(title);
-            infoDiv.appendChild(date);
-            boxDiv.appendChild(infoDiv);
-
-            // 添加點擊事件
-            boxDiv.addEventListener('click', () => {
-                window.location.href = `article_detail.html?id=${article.id}`;
-            });
-            boxDiv.style.cursor = 'pointer';
-
             itemDiv.appendChild(boxDiv);
+
+            // 建立內容區塊
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'content';
+
+            const titleElement = document.createElement('h3');
+            titleElement.className = 'title';
+            titleElement.innerHTML = keyword ? highlightKeyword(article.title, keyword) : article.title;
+
+            const previewElement = document.createElement('p');
+            previewElement.className = 'preview';
+            let previewText = article.preview || article.content || '';
+            if (previewText.length > 100) {
+                previewText = previewText.substring(0, 100) + '...';
+            }
+            previewElement.innerHTML = keyword ? highlightKeyword(previewText, keyword) : previewText;
+
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'meta';
+
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'date';
+            dateSpan.textContent = new Date(article.published_at).toLocaleDateString();
+            metaDiv.appendChild(dateSpan);
+
+            // 如果存在 tags，則加入標籤
+            if (article.tags && Array.isArray(article.tags) && article.tags.length > 0) {
+                const tagsDiv = document.createElement('div');
+                tagsDiv.className = 'tags';
+                article.tags.forEach(tag => {
+                    const tagSpan = document.createElement('span');
+                    tagSpan.className = 'tag';
+                    tagSpan.textContent = tag;
+                    tagsDiv.appendChild(tagSpan);
+                });
+                metaDiv.appendChild(tagsDiv);
+            }
+
+            contentDiv.appendChild(titleElement);
+            contentDiv.appendChild(previewElement);
+            contentDiv.appendChild(metaDiv);
+            itemDiv.appendChild(contentDiv);
+
+            // 點擊整個文章項目跳轉到文章詳情
+            itemDiv.addEventListener('click', () => {
+                if (edit) {
+                    window.location.href = `post.html?id=${article.id}`;
+                } else {
+                    window.location.href = `article_detail.html?id=${article.id}`;
+                }
+            });
+
             searchResults.appendChild(itemDiv);
         });
     }

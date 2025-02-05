@@ -1,6 +1,6 @@
 import { logout } from './auth.js';
 import { isLoggedIn } from './auth.js';
-
+import { getCurrentUserId } from './auth.js';
 document.addEventListener('DOMContentLoaded', () => {
     if (!isLoggedIn()) {
         alert('您尚未登入，請先登入。');
@@ -35,7 +35,7 @@ function navigateToPost() {
 
 // 導航到編輯文章
 function navigateToEdit() {
-    window.location.href = 'article_list.html'; // 假設 article_list.html 用於編輯文章
+    window.location.href = 'search.html?edit=true&userId=' + getCurrentUserId(); // 假設 article_list.html 用於編輯文章
 }
 
 export { navigateToPost, navigateToEdit }; 

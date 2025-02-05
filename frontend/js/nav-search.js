@@ -8,6 +8,7 @@ let popularTags = [];
 async function initializeSearch() {
     const searchInput = document.getElementById('navSearchInput');
     const suggestionsDiv = document.getElementById('searchSuggestions');
+    const navSearchButton = document.getElementById('navSearchButton');
     const popularTagsDiv = document.getElementById('popularTags');
     const autocompleteResultsDiv = document.getElementById('autocompleteResults');
 
@@ -24,6 +25,25 @@ async function initializeSearch() {
 
     // 監聽搜尋輸入
     searchInput.addEventListener('input', debounce(handleSearchInput, 300));
+
+    // 處理搜尋導向函數
+    function handleSearch(e) {
+        e.preventDefault();
+        const query = searchInput.value.trim();
+        if (query) {
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+        }
+    }
+
+    // 監聽按下 Enter 鍵
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            handleSearch(e);
+        }
+    });
+
+    // 監聽按下 button 事件
+    navSearchButton.addEventListener('click', handleSearch);
 
     // 監聽點擊事件以關閉建議框
     document.addEventListener('click', (e) => {
