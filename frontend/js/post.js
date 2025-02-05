@@ -172,7 +172,6 @@ export function updatePopularTags() {
 // 將需要在全域使用的函數掛載到 window 對象上
 window.readURL = readURL;
 window.removeImage = removeImage;
-window.previewArticle = previewArticle;
 window.removeTag = removeTag;
 window.handleTagInput = handleTagInput;
 window.handleTagKeydown = handleTagKeydown;
@@ -193,38 +192,4 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 });
 
-// 定義其他需要的函數，如 previewArticle
-export function previewArticle() {
-	const title = document.getElementById('title').value.trim();
-	const content = document.getElementById('content').value.trim();
-	const categories = getSelectedCategories();
-	const imageUrl = document.getElementById('uploadImage').src;
-
-	const previewWindow = window.open('', '_blank');
-	previewWindow.document.write(`
-		<html>
-			<head>
-				<title>${title}</title>
-				<link rel="stylesheet" href="css/main.css">
-			</head>
-			<body>
-				<h1>${title}</h1>
-				<img src="${imageUrl}" alt="文章圖片" style="max-width:100%;">
-				<div>${content.replace(/\n/g, '<br>')}</div>
-				<div>類別: ${categories.join(', ')}</div>
-			</body>
-		</html>
-	`);
-	previewWindow.document.close();
-}
-
-export function getSelectedCategories() {
-	const categories = [];
-	if (document.getElementById('category_health').checked) categories.push('衛教知識');
-	if (document.getElementById('category_fun').checked) categories.push('樂趣玩法');
-	if (document.getElementById('category_experience').checked) categories.push('經驗分享');
-	if (document.getElementById('category_other').checked) categories.push('其他');
-	return categories;
-}
-// 如果有其他需要在 HTML 中調用的函數，依此類推
 
