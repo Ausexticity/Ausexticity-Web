@@ -168,6 +168,15 @@ export function updatePopularTags() {
 		.join('');
 }
 
+// 處理圖片網址
+export function applyImageUrl(url) {
+	if (url) {
+		$('#uploadImage').attr('src', url);
+		$('#uploadImage').parent().css('display', 'block'); // 顯示圖片預覽
+		$('#image-upload').css('display', 'block'); // 確保上傳按鈕可見
+		$('#image-url').val(url); // 更新輸入框的值
+	}
+}
 
 // 將需要在全域使用的函數掛載到 window 對象上
 window.readURL = readURL;
@@ -175,6 +184,7 @@ window.removeImage = removeImage;
 window.removeTag = removeTag;
 window.handleTagInput = handleTagInput;
 window.handleTagKeydown = handleTagKeydown;
+window.applyImageUrl = applyImageUrl;
 
 // 在文檔加載完成後初始化
 document.addEventListener('DOMContentLoaded', () => {
@@ -184,11 +194,24 @@ document.addEventListener('DOMContentLoaded', () => {
 	// 綁定刪除圖片按鈕的點擊事件
 	$('#remove-image').click(function () {
 		removeImage('#uploadImage');
+		$('#image-url').val(''); // 清空網址輸入框
 	});
 
 	// 綁定圖片上傳的變更事件
 	$('#image-upload').change(function () {
 		readURL(this, '#uploadImage');
+		$('#image-url').val(''); // 清空網址輸入框
+	});
+
+	// 綁定套用網址按鈕的點擊事件
+	$('#apply-url').click(function () {
+		const url = $('#image-url').val().trim();
+		if (url) {
+			applyImageUrl(url);
+			$('#image-upload').val(''); // 清空文件輸入
+		} else {
+			alert('請輸入圖片網址');
+		}
 	});
 });
 

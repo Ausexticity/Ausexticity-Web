@@ -110,10 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * 上傳圖片到後端並返回圖片的 URL
  * @returns {Promise<string|null>} 圖片的 URL 或 null
  */
-export async function uploadImage() {
-    const fileInput = document.getElementById('image-upload');
-    const file = fileInput.files[0];
-
+export async function uploadImage(file) {
     if (!file) {
         alert('請選擇一張圖片進行上傳。');
         return null;
@@ -208,5 +205,58 @@ export async function deleteArticle(articleId) {
     }
 }
 
+/**
+ * 壓縮圖片 (前端)
+ * @param {File} file - 原始圖片檔案
+ * @param {Object} options - 壓縮選項，例如 quality、maxWidth、maxHeight
+ * @returns {Promise<File>} 返回壓縮後的圖片檔案
+ */
+export async function compressImage(file, options = {}) {
+    return new Promise((resolve, reject) => {
+        const quality = options.quality || 0.7;        // 壓縮品質 (介於 0 與 1 之間)
+        const maxWidth = options.maxWidth || 1024;       // 最大寬度
+        const maxHeight = options.maxHeight || 1024;     // 最大高度
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                // 計算縮放比例，維持原圖比例
+                if (width > maxWidth || height > maxHeight) {
+                    const scale = Math.min(maxWidth / width, maxHeight / height);
+                    width = width * scale;
+                    height = height * scale;
+                }
+
+                // 建立 canvas 並將圖片繪製至 canvas 上
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // 使用 toBlob 轉換 canvas，並以 JPEG 格式、指定品質輸出
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const compressedFile = new File([blob], file.name, {
+                            type: blob.type,
+                            lastModified: Date.now()
+                        });
+                        resolve(compressedFile);
+                    } else {
+                        reject(new Error('圖片壓縮失敗'));
+                    }
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = (error) => reject(error);
+        };
+        reader.onerror = (error) => reject(error);
+    });
+}
 
 export { updateHeader, fetchArticles, formatPublishedDate, truncateTitle };

@@ -1,0 +1,59 @@
+<input type="file" id="file">
+<button id="download">下載</button>
+
+<script>
+    let fileInput = document.getElementById('file');
+    fileInput.addEventListener('change', selectFile);
+
+    imageType = "";
+
+    function selectFile() {
+        let file = fileInput.files[0];
+
+        if (!file.type.startsWith('image/')) {
+            console.log("不是圖片格式");
+            return;
+        }
+
+        imageType = file.type;
+        readFile(file);
+    }
+    function readFile(file) {
+        let reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onload = function (event) {
+            let blob = new Blob([event.target.result]);
+            window.URL = window.URL || window.webkitURL;
+            let blobURL = window.URL.createObjectURL(blob);
+
+            let image = new Image();
+            image.src = blobURL;
+            image.onload = function () {
+                console.log(image)
+                let newImage = resize(image);
+                setDownload(newImage);
+                console.log(newImage);
+            }
+        }
+    }
+    function resize(image) {
+        let canvas = document.createElement('canvas');
+        // 畫布大小為圖片的 0.9 倍
+        canvas.width = image.width * 0.5;
+        canvas.height = image.height * 0.5;
+        let ctx = canvas.getContext("2d");
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height); // 把圖片畫在畫布上(0,0)作標到(canvas.width,canvas.height)
+
+        let newImg = canvas.toDataURL(imageType, 0.8); // 0.8是圖片壓縮比
+        return newImg;
+    }
+
+    function setDownload(newImg) {
+        let download = document.getElementById("download");
+        let fileName = imageType.replace('/', '.');
+
+        download.setAttribute("download", fileName);
+        download.setAttribute("href", newImg);
+    }
+
+</script>

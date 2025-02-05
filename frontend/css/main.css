@@ -2478,3 +2478,101 @@ header .header-div .outer-div .links .search-container .search-button i {
     -webkit-line-clamp: 2;
   }
 }
+
+/* 圖片網址輸入框樣式 */
+.section-post .block-post .outer-div .box-div .form-div .item .controller .upload-list .sub-item .box.url-input {
+  border: none;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+.section-post .block-post .outer-div .box-div .form-div .item .controller .upload-list .sub-item .box.url-input:hover {
+  background-color: #f1f3f5;
+  transform: none;
+  box-shadow: none;
+}
+
+.url-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #fff;
+  border: 2px solid #E0D5C1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+}
+
+.url-input-wrapper:focus-within {
+  border-color: #152F2B;
+  box-shadow: 0 0 0 3px rgba(21, 47, 43, 0.1);
+}
+
+.url-input-wrapper i {
+  color: #954527;
+  font-size: 16px;
+}
+
+.url-input-wrapper input {
+  flex: 1;
+  border: none !important;
+  padding: 8px !important;
+  font-size: 15px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.url-input-wrapper input:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.url-input-wrapper .btn-submit {
+  background-color: #954527;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.url-input-wrapper .btn-submit:hover {
+  background-color: #E06609;
+  transform: translateY(-1px);
+}
+
+.url-hint {
+  display: block;
+  margin-top: 8px;
+  color: #686868;
+  font-size: 13px;
+  padding-left: 4px;
+}
+
+@media all and (max-width: 640px) {
+  .url-input-wrapper {
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .url-input-wrapper input {
+    width: 100%;
+    padding: 6px !important;
+  }
+
+  .url-input-wrapper .btn-submit {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .url-hint {
+    font-size: 12px;
+    text-align: center;
+  }
+}

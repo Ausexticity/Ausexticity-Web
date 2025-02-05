@@ -1,6 +1,6 @@
 import { API_BASE_URL } from './config.js';
 import { isLoggedIn, getCurrentUserId } from './auth.js';
-import { uploadImage, deleteImage } from './misc.js';
+import { uploadImage, deleteImage, compressImage } from './misc.js';
 import { formatPublishedDate, fetchArticles } from './misc.js';
 import { readURL, getSelectedTags, addTag } from './post.js';
 
@@ -69,10 +69,12 @@ export function populateForm(article) {
         $('#uploadImage').attr('src', article.image_url).parent().css('display', 'block'); // 顯示現有圖片
         $('#image-upload').parent().css('display', 'block'); // 顯示上傳按鈕
         $('#image-upload').val(''); // 清空文件輸入
+        $('#image-url').val(article.image_url); // 設定圖片網址
         originalImageUrl = article.image_url; // 儲存原始圖片網址
     } else {
         $('#uploadImage').attr('src', 'images/default_detail_img.png').parent().css('display', 'none'); // 隱藏圖片預覽
         $('#image-upload').parent().css('display', 'block'); // 顯示上傳按鈕
+        $('#image-url').val(''); // 清空圖片網址
         originalImageUrl = ''; // 無原始圖片
     }
 }
@@ -89,10 +91,17 @@ export async function submitArticle() {
     const content = document.getElementById('content').value.trim();
     const tags = getSelectedTags();
     const imageInput = document.getElementById('image-upload');
+    const imageUrlInput = document.getElementById('image-url');
     let imageUrl = '';
 
-    if (imageInput.files && imageInput.files[0]) {
-        imageUrl = await uploadImage(imageInput.files[0]);
+    // 檢查是否有圖片網址
+    if (imageUrlInput.value.trim()) {
+        imageUrl = imageUrlInput.value.trim();
+    }
+    // 若沒有圖片網址但有選取圖片，則進行壓縮後上傳
+    else if (imageInput.files && imageInput.files[0]) {
+        const compressedFile = await compressImage(imageInput.files[0]);
+        imageUrl = await uploadImage(compressedFile);
     }
 
     const userId = getCurrentUserId(); // 獲取當前用戶ID
@@ -123,9 +132,9 @@ export async function submitArticle() {
         if (response.status === 201) {
             alert('文章發布成功');
             const data = await response.json();
-            articleId = data.id;
+            const newArticleId = data.id;
             await fetchArticles(true);
-            window.location.href = `article_detail.html?id=${articleId}`;
+            window.location.href = `article_detail.html?id=${newArticleId}`;
         } else {
             const data = await response.json();
             alert(`發布失敗: ${data.detail}`);
@@ -148,11 +157,17 @@ export async function updateArticle() {
     const content = document.getElementById('content').value.trim();
     const tags = getSelectedTags();
     const imageInput = document.getElementById('image-upload');
+    const imageUrlInput = document.getElementById('image-url');
     let imageUrl = originalImageUrl; // 預設使用原始圖片網址
 
-    // 判斷是否有選擇新的圖片
-    if (imageInput.files && imageInput.files[0]) {
-        const uploadedImageUrl = await uploadImage(imageInput.files[0]);
+    // 檢查是否有新的圖片網址，如果有則使用新的圖片網址
+    if (imageUrlInput.value.trim()) {
+        imageUrl = imageUrlInput.value.trim();
+    }
+    // 若沒有新的圖片網址但有選取新圖片，則進行壓縮後上傳
+    else if (imageInput.files && imageInput.files[0]) {
+        const compressedFile = await compressImage(imageInput.files[0]);
+        const uploadedImageUrl = await uploadImage(compressedFile);
         if (uploadedImageUrl) {
             imageUrl = uploadedImageUrl;
         } else {
@@ -187,7 +202,7 @@ export async function updateArticle() {
         });
 
         if (response.status === 200) {
-            // 如果有上傳新圖片且原本有圖片則刪除舊照片
+            // 若更換圖片（不論是使用 URL 或上傳新檔案），且原本有圖片，則刪除舊圖片
             if (originalImageUrl && originalImageUrl !== imageUrl) {
                 await deleteImage(originalImageUrl);
             }
