@@ -151,22 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             contentDiv.appendChild(titleWrapper);
 
-            const previewElement = document.createElement('p');
-            previewElement.className = 'preview';
-            let previewText = article.preview || article.content || '';
-            if (previewText.length > 100) {
-                previewText = previewText.substring(0, 100) + '...';
-            }
-            previewElement.innerHTML = keyword ? highlightKeyword(previewText, keyword) : previewText;
-
-            const metaDiv = document.createElement('div');
-            metaDiv.className = 'meta';
-
-            const dateSpan = document.createElement('span');
-            dateSpan.className = 'date';
-            dateSpan.textContent = new Date(article.published_at).toLocaleDateString();
-            metaDiv.appendChild(dateSpan);
-
             // 如果存在 tags，則加入標籤
             if (article.tags && Array.isArray(article.tags) && article.tags.length > 0) {
                 const tagsDiv = document.createElement('div');
@@ -177,10 +161,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     tagSpan.textContent = tag;
                     tagsDiv.appendChild(tagSpan);
                 });
-                metaDiv.appendChild(tagsDiv);
+                contentDiv.appendChild(tagsDiv);
             }
 
+            const previewElement = document.createElement('p');
+            previewElement.className = 'preview';
+            let previewText = article.preview || article.content || '';
+            if (previewText.length > 100) {
+                previewText = previewText.substring(0, 100) + '...';
+            }
+            previewElement.innerHTML = keyword ? highlightKeyword(previewText, keyword) : previewText;
             contentDiv.appendChild(previewElement);
+
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'meta';
+
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'date';
+            dateSpan.textContent = new Date(article.published_at).toLocaleDateString();
+            metaDiv.appendChild(dateSpan);
+
             contentDiv.appendChild(metaDiv);
             itemDiv.appendChild(contentDiv);
 

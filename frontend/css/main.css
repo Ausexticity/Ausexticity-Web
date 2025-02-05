@@ -1006,7 +1006,7 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 15px;
+  /* gap: 15px; */
 }
 
 .section-article-list .block-article-list .outer-div .search-result-lists .item .content .title-wrapper {
@@ -1014,6 +1014,7 @@ main {
   justify-content: space-between;
   align-items: flex-start;
   gap: 10px;
+  margin-bottom: 5px;
 }
 
 .section-article-list .block-article-list .outer-div .search-result-lists .item .content .title-wrapper .title {
@@ -2402,5 +2403,78 @@ header .header-div .outer-div .links .search-container .search-button i {
 
   .article-actions button i {
     font-size: 14px;
+  }
+}
+
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions button i {
+  font-size: 16px;
+}
+
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .preview {
+  font-size: 14px;
+  color: #686868;
+  line-height: 1.5;
+  margin: 10px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-left: -2px;
+  margin-top: 2px;
+  margin-bottom: 6px;
+  /* margin: 10px 0; */
+}
+
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .tags .tag {
+  background-color: #F1E3CB;
+  color: #152F2B;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .tags .tag:hover {
+  background-color: #954527;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .meta {
+  margin-top: auto;
+  color: #686868;
+  font-size: 14px;
+  padding-top: 15px;
+}
+
+@media all and (max-width: 768px) {
+  .section-article-list .block-article-list .outer-div .search-result-lists .item .content .title-wrapper .title {
+    font-size: 16px;
+  }
+
+  .section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions button {
+    padding: 4px;
+  }
+
+  .section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions button i {
+    font-size: 14px;
+  }
+
+  .section-article-list .block-article-list .outer-div .search-result-lists .item .content .tags .tag {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+
+  .section-article-list .block-article-list .outer-div .search-result-lists .item .content .preview {
+    font-size: 13px;
+    -webkit-line-clamp: 2;
   }
 }

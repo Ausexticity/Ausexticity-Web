@@ -122,8 +122,10 @@ export async function submitArticle() {
 
         if (response.status === 201) {
             alert('文章發布成功');
+            const data = await response.json();
+            articleId = data.id;
             await fetchArticles(true);
-            window.location.href = 'article_list.html';
+            window.location.href = `article_detail.html?id=${articleId}`;
         } else {
             const data = await response.json();
             alert(`發布失敗: ${data.detail}`);
