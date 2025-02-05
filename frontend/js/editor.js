@@ -197,28 +197,3 @@ export async function updateArticle() {
         alert('更新文章時發生錯誤');
     }
 }
-
-// // 預覽文章
-// export function previewArticle() {
-//     const title = document.getElementById('title').value.trim();
-//     const content = document.getElementById('content').value.trim();
-//     const categories = getSelectedCategories();
-//     const imageUrl = document.getElementById('uploadImage').src;
-
-//     const previewWindow = window.open('', '_blank');
-//     previewWindow.document.write(`
-//         <html>
-//             <head>
-//                 <title>${title}</title>
-//                 <link rel="stylesheet" href="css/main.css">
-//             </head>
-//             <body>
-//                 <h1>${title}</h1>
-//                 <img src="${imageUrl}" alt="文章圖片" style="max-width:100%;">
-//                 <div>${content.replace(/\n/g, '<br>')}</div>
-//                 <div>類別: ${categories.join(', ')}</div>
-//             </body>
-//         </html>
-//     `);
-//     previewWindow.document.close();
-// } 

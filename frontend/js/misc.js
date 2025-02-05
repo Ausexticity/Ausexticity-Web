@@ -146,4 +146,65 @@ export async function uploadImage() {
     }
 }
 
+/**
+ * 刪除圖片
+ * @param {string} imageUrl - 要刪除的圖片 URL
+ * 
+ * @app.delete("/api/delete_image")
+def delete_image(request: DeleteImageRequest, user: dict = Depends(verify_token)):
+ */
+export async function deleteImage(imageUrl) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/delete_image`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('idToken')}`
+            }
+        });
+
+        if (response.status === 200) {
+            return true;
+        } else {
+            const errorData = await response.json();
+            alert(`刪除圖片時發生錯誤: ${errorData.detail}`);
+            return null;
+        }
+    } catch (error) {
+        console.error('刪除圖片時發生錯誤:', error);
+        alert('刪除圖片時發生錯誤，請稍後再試。');
+        return null;
+    }
+}
+
+/**
+ * 刪除文章 
+ * @param {string} articleId - 要刪除的文章 ID
+ * @app.delete("/api/articles/{article_id}")
+def delete_article(article_id: str, user: dict = Depends(verify_token)):    
+ * 
+ */
+export async function deleteArticle(articleId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/articles/${articleId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('idToken')}`
+            }
+        });
+
+        if (response.status === 200) {
+            return true;
+        } else {
+            const errorData = await response.json();
+            alert(`刪除文章時發生錯誤: ${errorData.detail}`);
+            return null;
+        }
+    } catch (error) {
+        console.error('刪除文章時發生錯誤:', error);
+        alert('刪除文章時發生錯誤，請稍後再試。');
+        return null;
+    }
+}
+
+
 export { updateHeader, fetchArticles, formatPublishedDate, truncateTitle };

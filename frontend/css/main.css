@@ -1009,96 +1009,72 @@ main {
   gap: 15px;
 }
 
-.section-article-list .block-article-list .outer-div .search-result-lists .item .content .title {
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .title-wrapper .title {
   font-size: 18px;
   font-weight: 600;
   color: #152F2B;
   line-height: 1.4;
   margin: 0;
+  flex: 1;
 }
 
-.section-article-list .block-article-list .outer-div .search-result-lists .item .content .preview {
-  font-size: 14px;
-  color: #686868;
-  line-height: 1.5;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-height: 63px;
-}
-
-.section-article-list .block-article-list .outer-div .search-result-lists .item .content .meta {
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions {
   display: flex;
-  justify-content: space-between;
+  gap: 5px;
   align-items: center;
-  padding-top: 15px;
-  margin-top: auto;
-  border-top: 1px solid #E0D5C1;
-  gap: 10px;
+  flex-shrink: 0;
 }
 
-.section-article-list .block-article-list .outer-div .search-result-lists .item .content .meta .date {
-  font-size: 12px;
-  color: #954527;
-  font-family: "DM Mono", monospace;
-  white-space: nowrap;
-}
-
-.section-article-list .block-article-list .outer-div .search-result-lists .item .content .meta .tags {
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  max-width: 70%;
-  margin: 0;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
-.section-article-list .block-article-list .outer-div .search-result-lists .item .content .meta .tags .tag {
-  font-size: 12px;
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions .edit-btn {
   color: #E06609;
-  background: rgba(224, 102, 9, 0.1);
-  padding: 4px 8px;
-  border-radius: 12px;
-  white-space: nowrap;
-  margin: 0;
 }
 
-@media all and (max-width: 1200px) {
-  .section-article-list .block-article-list .outer-div .search-result-lists .item {
-    width: calc(33.33% - 24px);
-    height: 400px;
-  }
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions .edit-btn:hover {
+  background-color: rgba(149, 68, 39, 0.1);
 }
 
-@media all and (max-width: 992px) {
-  .section-article-list .block-article-list .outer-div .search-result-lists .item {
-    width: calc(50% - 24px);
-    height: 380px;
-  }
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions .delete-btn {
+  color: #dc3545;
+}
 
-  .section-article-list .block-article-list .outer-div .search-result-lists .item .box {
-    height: 180px;
-  }
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions .delete-btn:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions button i {
+  font-size: 16px;
 }
 
 @media all and (max-width: 768px) {
-  .section-article-list .block-article-list .outer-div .search-result-lists .item {
-    width: calc(100% - 24px);
-    height: 360px;
-  }
-
-  .section-article-list .block-article-list .outer-div .search-result-lists .item .box {
-    height: 160px;
-  }
-
-  .section-article-list .block-article-list .outer-div .search-result-lists .item .content .title {
+  .section-article-list .block-article-list .outer-div .search-result-lists .item .content .title-wrapper .title {
     font-size: 16px;
   }
 
-  .section-article-list .block-article-list .outer-div .search-result-lists .item .content .preview {
-    font-size: 13px;
+  .section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions button {
+    padding: 4px;
+  }
+
+  .section-article-list .block-article-list .outer-div .search-result-lists .item .content .article-actions button i {
+    font-size: 14px;
   }
 }
 
@@ -2377,5 +2353,54 @@ header .header-div .outer-div .links .search-container .search-button i {
     width: 100%;
     padding: 12px 20px;
     font-size: 16px;
+  }
+}
+
+/* 添加文章操作按鈕的樣式 */
+.article-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.article-actions button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.article-actions .edit-btn {
+  color: #E06609;
+}
+
+.article-actions .edit-btn:hover {
+  background-color: rgba(149, 68, 39, 0.1);
+}
+
+.article-actions .delete-btn {
+  color: #dc3545;
+}
+
+.article-actions .delete-btn:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.article-actions button i {
+  font-size: 16px;
+}
+
+@media all and (max-width: 768px) {
+  .article-actions button {
+    padding: 6px;
+  }
+
+  .article-actions button i {
+    font-size: 14px;
   }
 }

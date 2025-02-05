@@ -21,7 +21,9 @@ from ai_module import (
 )
 import logging
 import asyncio
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
+from google.api_core.exceptions import NotFound  # 若有需要，可引入對應的例外
+import urllib.parse
 
 app = FastAPI()
 logger = logging.getLogger('uvicorn.error')
@@ -74,6 +76,8 @@ MODEL = "claude-3-5-sonnet-20241022"
 # 定義驗證依賴項
 security = HTTPBearer()
 
+# 函式區
+
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
     try:
@@ -101,6 +105,39 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
             detail="無法驗證驗證令牌",
             headers={"WWW-Authenticate": "Bearer"},
         )
+        
+def get_blob_name(url):
+    """
+    從 Firebase Storage URL 中取得 blob_name
+
+    URL 範例:
+    https://firebasestorage.googleapis.com/v0/b/eros-web-94e22.firebasestorage.app/o/images%2Fncc%2F2025-01-19T18%3A01%3A51.862511_%E6%B2%92%E6%9C%89%E7%B7%9A%E6%A2%9D%E7%9A%84.png?alt=media&token=93a71ec5-d42b-479b-b704-e8a8184c9162
+
+    程式邏輯:
+    1. 解析 URL 並取得 path 部分。
+    2. 由 path 中找到 "/o/" 之後的編碼字串，此部分即為 blob 的編碼名稱。
+    3. 利用 urllib.parse.unquote 將編碼字串進行解碼，取得原始 blob_name。
+
+    回傳結果:
+    "images/ncc/2025-01-19T18:01:51.862511_沒有線條的.png"
+    """
+    parsed_url = urllib.parse.urlparse(url)
+    path = parsed_url.path  # 例如: "/v0/b/eros-web-94e22.firebasestorage.app/o/images%2Fncc%2F2025-01-19T18%3A01%3A51.862511_%E6%B2%92%E6%9C%89%E7%B7%9A%E6%A2%9D%E7%9A%84.png"
+    
+    marker = "/o/"
+    marker_index = path.find(marker)
+    if marker_index == -1:
+        return None  # 若找不到 "/o/" 則回傳 None
+
+    # 取得 "/o/" 之後的部分 (仍為 URL 編碼的 blob_name)
+    blob_encoded = path[marker_index + len(marker):]
+
+    # 解碼取得原始 blob_name
+    blob_name = urllib.parse.unquote(blob_encoded)
+    return blob_name
+
+
+
 
 class LoginRequest(BaseModel):
     username: str
@@ -177,9 +214,6 @@ def get_articles(user_id: Optional[str] = None):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"獲取文章時出錯: {e}")
 
-@app.get("/api/hello")
-def read_root():
-    return {"message": "Hello, Eros"}
 
 class ChatRequest(BaseModel):
     query: str
@@ -362,3 +396,77 @@ async def upload_image(image: UploadFile = File(...), user: dict = Depends(verif
     except Exception as e:
         logger.error(f"上傳圖片時出錯: {str(e)}")
         raise HTTPException(status_code=500, detail="上傳圖片時發生錯誤。")
+
+# 刪除文章 API
+@app.delete("/api/articles/{article_id}")
+def delete_article(article_id: str, user: dict = Depends(verify_token)):
+    try:
+        doc_ref = articles_collection.document(article_id)
+        # 檢查文章是否存在
+        doc_snapshot = doc_ref.get()
+        if not doc_snapshot.exists:
+            raise HTTPException(status_code=404, detail="找不到該文章")
+        
+        # 可選：若要確保使用者只能刪除自己的文章，可檢查文章的 user_id
+        doc_data = doc_snapshot.to_dict()
+        if "user_id" in doc_data and doc_data["user_id"] is not None:
+            if doc_data["user_id"] != user.get("uid"):
+                raise HTTPException(status_code=403, detail="您無權刪除此文章")
+            
+        # 刪除文章前先刪除圖片
+        
+        if "image_url" in doc_data and doc_data["image_url"] is not None:
+            # 將圖片網址字串封裝成 DeleteImageRequest 物件，才能正確呼叫 delete_image API
+            delete_image(DeleteImageRequest(image_url=doc_data["image_url"]), user)
+
+        # 刪除文章
+        
+        doc_ref.delete()
+        logger.info(f"使用者 {user['uid']} 刪除了文章 {article_id}")
+        return {"message": "文章刪除成功"}
+
+    except Exception as e:
+        logger.error(f"刪除文章時出錯: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"刪除文章時出錯: {str(e)}")
+
+
+# 刪除圖片 API
+
+class DeleteImageRequest(BaseModel):
+    image_url: str
+
+@app.delete("/api/delete_image")
+def delete_image(request: DeleteImageRequest, user: dict = Depends(verify_token)):
+    image_url = request.image_url
+    # 檢查圖片 URL 中是否包含該使用者的 UID，確保使用者只能刪除自己的圖片
+    if user["uid"] not in image_url:
+        logger.warning(f"使用者 {user['uid']} 嘗試刪除非本人圖片: {image_url}")
+        raise HTTPException(status_code=403, detail="您無權刪除此圖片")
+    
+    # 根據上傳圖片時的邏輯，圖片的公開 URL 形態通常為：
+    # https://storage.googleapis.com/{bucket.name}/<blob_path>
+    bucket_url_prefix = f"https://storage.googleapis.com/{bucket.name}/"
+    if not image_url.startswith(bucket_url_prefix):
+        logger.error(f"圖片 URL 格式錯誤: {image_url}")
+        raise HTTPException(status_code=400, detail="圖片 URL 格式錯誤")
+    
+    # 取得 blob 的相對路徑
+    blob_name = image_url.replace(bucket_url_prefix, "")
+    # percent decode
+    blob_name = urllib.parse.unquote(blob_name) 
+    # 刪除 blob
+    try:
+        blob = bucket.blob(blob_name)
+        blob.delete()
+
+        logger.info(f"使用者 {user['uid']} 成功刪除了圖片: {image_url}")
+        return {"message": "圖片刪除成功"}
+    except Exception as e:
+        # 如果錯誤訊息中包含「No such object」，視為檔案不存在，進而忽略該錯誤
+        if "No such object" in str(e):
+            logger.warning(f"圖片不存在，無需刪除: {image_url}")
+            return {"message": "圖片不存在，視為已刪除"}
+        else:
+            logger.error(f"刪除圖片時出錯: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"刪除圖片時出錯: {str(e)}")
+

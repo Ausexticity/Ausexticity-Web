@@ -204,20 +204,21 @@ def generate_response(documents_cn, documents_en, user_query, additional_context
 用戶問題：
 {user_query}
 
-回答："""
+使用生動有趣的方式介紹性知識，並且適時的使用表情符號增添趣味性🍑💦 因聊天介面已包含重要提醒: 1.需要注意衛生和安全 2.應該尊重雙方意願 3.保持開放溝通很重要，不需要在訊息中再次提醒
+"""
         # 使用 Anthropic API 進行回答
         message = claude_client.messages.create(
             model=model,
             max_tokens=8192,
-            temperature=0.6,  # 調整此處的 temperature
-            system="""你是一個飽學性知識的專家，負責與用戶真誠的聊天!
-            過程要保持熱情、友善且具有同理心💛""",
+            temperature=0.8,  # 調整此處的 temperature
+            system="",        # 系統提示
             messages= additional_context + [
                 {
                     "role": "user",
                     "content": prompt
                 }
             ]
+
         )
 
         return message.content[0].text

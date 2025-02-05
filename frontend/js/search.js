@@ -1,5 +1,5 @@
 import { API_BASE_URL } from './config.js';
-import { fetchArticles, formatPublishedDate, updateHeader } from './misc.js';
+import { fetchArticles, formatPublishedDate, updateHeader, deleteArticle } from './misc.js';
 
 // 搜尋功能實現
 document.addEventListener('DOMContentLoaded', () => {
@@ -107,9 +107,49 @@ document.addEventListener('DOMContentLoaded', () => {
             const contentDiv = document.createElement('div');
             contentDiv.className = 'content';
 
+            const titleWrapper = document.createElement('div');
+            titleWrapper.className = 'title-wrapper';
+
             const titleElement = document.createElement('h3');
             titleElement.className = 'title';
             titleElement.innerHTML = keyword ? highlightKeyword(article.title, keyword) : article.title;
+
+            titleWrapper.appendChild(titleElement);
+
+            // 如果在編輯模式下，添加編輯和刪除按鈕到標題旁邊
+            if (edit) {
+                const actionDiv = document.createElement('div');
+                actionDiv.className = 'article-actions';
+
+                const editButton = document.createElement('button');
+                editButton.className = 'edit-btn';
+                editButton.innerHTML = '<i class="fas fa-edit"></i>';
+                editButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.location.href = `post.html?id=${article.id}`;
+                });
+
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-btn';
+                deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteButton.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (confirm('確定要刪除這篇文章嗎？')) {
+                        // Loading 動畫
+                        // 刪除文章
+                        await deleteArticle(article.id);
+                        // 重新載入文章列表
+                        await fetchArticles(true);
+                        window.location.href = 'search.html?userId=' + userId + '&edit=true';
+                    }
+                });
+
+                actionDiv.appendChild(editButton);
+                actionDiv.appendChild(deleteButton);
+                titleWrapper.appendChild(actionDiv);
+            }
+
+            contentDiv.appendChild(titleWrapper);
 
             const previewElement = document.createElement('p');
             previewElement.className = 'preview';
@@ -140,18 +180,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 metaDiv.appendChild(tagsDiv);
             }
 
-            contentDiv.appendChild(titleElement);
             contentDiv.appendChild(previewElement);
             contentDiv.appendChild(metaDiv);
             itemDiv.appendChild(contentDiv);
 
             // 點擊整個文章項目跳轉到文章詳情
             itemDiv.addEventListener('click', () => {
-                if (edit) {
-                    window.location.href = `post.html?id=${article.id}`;
-                } else {
-                    window.location.href = `article_detail.html?id=${article.id}`;
-                }
+                window.location.href = `article_detail.html?id=${article.id}`;
             });
 
             searchResults.appendChild(itemDiv);
