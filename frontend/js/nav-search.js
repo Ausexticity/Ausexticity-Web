@@ -7,6 +7,7 @@ let searchContainer = document.querySelector('.search-container');
 let searchInput = document.querySelector('#navSearchInput');
 let searchIcon = document.querySelector('.fa-search');
 let isSearchExpanded = false;
+let suggestionsHideTimeout; // 新增：儲存建議框隱藏的計時器
 
 // 初始化搜尋功能
 async function initializeSearch() {
@@ -77,7 +78,7 @@ async function initializeSearch() {
         const suggestionsDiv = document.getElementById('searchSuggestions');
         // 檢查是否點擊了建議框內的元素
         if (suggestionsDiv && !suggestionsDiv.contains(e.relatedTarget)) {
-            setTimeout(() => {
+            suggestionsHideTimeout = setTimeout(() => {
                 suggestionsDiv.style.display = 'none';
                 suggestionsDiv.classList.remove('visible');
             }, 200);
@@ -112,6 +113,7 @@ function displayPopularTags() {
         return;
     }
     popularTagsDiv.innerHTML = popularTags
+        // 若需要讓 span 成為可聚焦元素，也可以加入 tabindex="0"
         .map(tag => `<span onclick="handleTagClick('${tag}')">${tag}</span>`)
         .join('');
 }
@@ -153,8 +155,11 @@ function handleSearchInput(e) {
 
 // 標籤點擊處理
 window.handleTagClick = function (tag) {
+    // 清除隱藏建議框的計時器，避免因失焦而隱藏建議框
+    clearTimeout(suggestionsHideTimeout);
     const searchInput = document.getElementById('navSearchInput');
     searchInput.value = tag;
+    searchInput.focus();
     searchInput.dispatchEvent(new Event('input'));
 };
 
