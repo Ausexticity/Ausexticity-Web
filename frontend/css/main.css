@@ -107,7 +107,7 @@ header .header-div .outer-div {
 header .header-div .outer-div .brand {
   display: flex;
   align-items: center;
-  height: 60px;
+  height: 50px;
   flex: 0 0 auto;
 }
 
@@ -124,15 +124,13 @@ header .header-div .outer-div .brand a img {
 }
 
 header .header-div .outer-div .brand a img:nth-child(1) {
-  margin-right: 15px;
-  height: 60px;
-  width: auto;
+  height: 50px;
+  margin-right: 10px;
 }
 
 header .header-div .outer-div .brand a img:nth-child(2) {
-  height: 30px;
-  width: auto;
-  margin-left: 10px;
+  height: 25px;
+  margin-left: 0;
 }
 
 header .header-div .outer-div .links {
@@ -322,17 +320,16 @@ main {
   }
 
   header .header-div .outer-div .brand {
-    height: 48px;
+    height: 45px;
   }
 
   header .header-div .outer-div .brand a img:nth-child(1) {
-    height: 48px;
-    margin-right: 5px;
+    height: 45px;
+    margin-right: 8px;
   }
 
   header .header-div .outer-div .brand a img:nth-child(2) {
-    height: 25px;
-    margin-left: 8px;
+    height: 22px;
   }
 
   .body-detail header .header-div .outer-div .brand a img:nth-child(1) {
@@ -849,6 +846,52 @@ main {
 
 .body-brown {
   background-color: #954527;
+}
+
+/* 為 login 頁面的 brand 添加特定樣式 */
+.body-brown header .header-div .outer-div .brand {
+  height: 50px;
+}
+
+.body-brown header .header-div .outer-div .brand a img:nth-child(1) {
+  height: 50px;
+  margin-right: 10px;
+}
+
+.body-brown header .header-div .outer-div .brand a img:nth-child(2) {
+  height: 25px;
+  filter: brightness(0) invert(1);
+  /* 將 logo 文字轉為白色 */
+  opacity: 0.9;
+}
+
+/* 響應式調整 */
+@media all and (max-width: 992px) {
+  .body-brown header .header-div .outer-div .brand {
+    height: 45px;
+  }
+
+  .body-brown header .header-div .outer-div .brand a img:nth-child(1) {
+    height: 45px;
+  }
+
+  .body-brown header .header-div .outer-div .brand a img:nth-child(2) {
+    height: 22px;
+  }
+}
+
+@media all and (max-width: 576px) {
+  .body-brown header .header-div .outer-div .brand {
+    height: 40px;
+  }
+
+  .body-brown header .header-div .outer-div .brand a img:nth-child(1) {
+    height: 40px;
+  }
+
+  .body-brown header .header-div .outer-div .brand a img:nth-child(2) {
+    height: 20px;
+  }
 }
 
 .section-adult-beauty {
@@ -2952,5 +2995,168 @@ dotlottie-player {
 @media all and (max-width: 576px) {
   .search-overlay.active {
     display: block;
+  }
+}
+
+/* Markdown 樣式 */
+.markdown-body {
+  color: #152F2B;
+  font-size: 16px;
+  line-height: 1.8;
+  overflow-wrap: break-word;
+  padding: 20px 0;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #152F2B;
+}
+
+.markdown-body h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #E0D5C1;
+}
+
+.markdown-body h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #E0D5C1;
+}
+
+.markdown-body h3 {
+  font-size: 1.25em;
+}
+
+.markdown-body h4 {
+  font-size: 1em;
+}
+
+.markdown-body p {
+  margin-bottom: 16px;
+  text-align: justify;
+}
+
+.markdown-body code {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgba(149, 69, 39, 0.1);
+  border-radius: 3px;
+  font-family: "DM Mono", monospace;
+}
+
+.markdown-body pre {
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.markdown-body pre code {
+  padding: 0;
+  margin: 0;
+  font-size: 100%;
+  background-color: transparent;
+}
+
+.markdown-body blockquote {
+  padding: 0 1em;
+  color: #686868;
+  border-left: 0.25em solid #E0D5C1;
+  margin-bottom: 16px;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 2em;
+  margin-bottom: 16px;
+}
+
+.markdown-body li {
+  margin-bottom: 0.25em;
+}
+
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  margin: 24px 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-body hr {
+  height: 2px;
+  padding: 0;
+  margin: 24px 0;
+  background-color: #E0D5C1;
+  border: 0;
+}
+
+.markdown-body table {
+  width: 100%;
+  margin-bottom: 16px;
+  border-collapse: collapse;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+  padding: 8px 16px;
+  border: 1px solid #E0D5C1;
+}
+
+.markdown-body table th {
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+.markdown-body strong {
+  font-weight: 600;
+}
+
+
+/* 響應式調整 */
+@media all and (max-width: 768px) {
+  .markdown-body {
+    font-size: 15px;
+    padding: 15px 0;
+  }
+
+  .markdown-body h1 {
+    font-size: 1.8em;
+  }
+
+  .markdown-body h2 {
+    font-size: 1.4em;
+  }
+
+  .markdown-body h3 {
+    font-size: 1.2em;
+  }
+}
+
+@media all and (max-width: 480px) {
+  .markdown-body {
+    font-size: 14px;
+    padding: 10px 0;
+  }
+
+  .markdown-body pre {
+    padding: 12px;
+  }
+
+  .markdown-body img {
+    margin: 16px 0;
   }
 }

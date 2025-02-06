@@ -16,6 +16,11 @@
     <link rel="stylesheet" href="css/vendor/owl.carousel.css?ver=2023100726">
     <link rel="stylesheet" href="css/main.css?ver=2023102401">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous">
+    <!-- 添加 Marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 添加 highlight.js 用於程式碼高亮 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 </head>
 
 <body class="body-detail">
@@ -81,102 +86,7 @@
     <script type="module" src="js/misc.js"></script>
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/nav-search.js"></script>
-    <script type="module">
-        import { fetchArticles, formatPublishedDate, truncateTitle } from './js/misc.js';
-
-        // 動態載入文章內容的 JavaScript 程式碼
-        async function loadArticleDetail() {
-            try {
-                // 獲取 URL 中的 id 參數
-                const urlParams = new URLSearchParams(window.location.search);
-                const articleId = urlParams.get('id');
-
-                if (!articleId) {
-                    console.error('沒有提供文章 ID');
-                    showErrorMessage('沒有提供文章 ID');
-                    return;
-                }
-
-                // 獲取所有文章資料
-                const articles = await fetchArticles();
-
-                // 找到對應的文章索引
-                const articleIndex = articles.findIndex(a => a.id === articleId);
-
-                if (articleIndex === -1) {
-                    console.error('找不到對應的文章');
-                    showErrorMessage('找不到對應的文章');
-                    return;
-                }
-
-                const article = articles[articleIndex];
-
-                // 填充文章內容
-                const articleContent = document.getElementById('article-content');
-                articleContent.innerHTML = `
-                    <div class="item">
-                        <div class="col01">
-                            <img src="${article.image_url || 'images/default_detail_img.png'}" alt="文章圖片">
-                        </div>
-                        <div class="col02">
-                            <h5>${formatPublishedDate(article.published_at)}</h5>
-                            <h2>${article.title}</h2>
-                            <div class="tags">
-                                ${article.tags ? article.tags.map(tag =>
-                    `<span class="tag" style="cursor:pointer;" onclick="event.stopPropagation(); window.location.href='search.html?q=${encodeURIComponent(tag)}'">${tag}</span>`
-                ).join('') : ''}
-                            </div>
-                            ${article.content.split('\n\n').map(paragraph => `<p>${paragraph}</p>`).join('')}
-                        </div>
-                    </div>
-                `;
-
-
-                // 設定 BACK 和 NEXT 按鈕
-                const backButton = document.getElementById('back-button');
-                const nextButton = document.getElementById('next-button');
-
-                if (articleIndex > 0) {
-                    const prevArticle = articles[articleIndex - 1];
-                    backButton.href = `article_detail.html?id=${prevArticle.id}`;
-                    backButton.innerHTML = `<i class="fa-solid fa-arrow-left"></i> ${truncateTitle(prevArticle.title)}`;
-                    backButton.setAttribute('aria-label', `返回上一篇文章：${prevArticle.title}`);
-                } else {
-                    backButton.style.display = 'none'; // 隱藏 BACK 按鈕
-                }
-
-                if (articleIndex < articles.length - 1) {
-                    const nextArticle = articles[articleIndex + 1];
-                    nextButton.href = `article_detail.html?id=${nextArticle.id}`;
-                    nextButton.innerHTML = `${truncateTitle(nextArticle.title)} <i class="fa-solid fa-arrow-right"></i>`;
-                    nextButton.setAttribute('aria-label', `前往下一篇文章：${nextArticle.title}`);
-                } else {
-                    nextButton.style.display = 'none'; // 隱藏 NEXT 按鈕
-                }
-
-            } catch (error) {
-                console.error('載入文章詳情失敗:', error);
-                showErrorMessage('載入文章詳情失敗，請稍後再試。');
-            }
-        }
-
-        // 顯示錯誤訊息給使用者
-        function showErrorMessage(message) {
-            const articleContent = document.getElementById('article-content');
-            articleContent.innerHTML = `
-                <div class="error-message" style="color: red; text-align: center;">
-                    <p>${message}</p>
-                </div>
-            `;
-            // 隱藏 BACK 和 NEXT 按鈕
-            document.getElementById('back-button').style.display = 'none';
-            document.getElementById('next-button').style.display = 'none';
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadArticleDetail();
-        });
-    </script>
+    <script type="module" src="js/article_detail.js"></script>
 </body>
 
 </html>

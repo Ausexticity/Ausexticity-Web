@@ -50,22 +50,22 @@ async function initializeSearch() {
     // 監聽按下 button 事件
     navSearchButton.addEventListener('click', handleSearch);
 
-    // 監聽點擊事件以關閉建議框
+    // 擴充點擊判斷，點擊在熱門標籤或推薦區域內就不隱藏推薦框
     document.addEventListener('click', (e) => {
-        if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+        if (!searchInput.contains(e.target) &&
+            !suggestionsDiv.contains(e.target) &&
+            (!popularTagsDiv || !popularTagsDiv.contains(e.target))) {
             suggestionsDiv.style.display = 'none';
         }
     });
 
     // 監聽搜尋框焦點
     searchInput.addEventListener('focus', () => {
-        const suggestionsDiv = document.getElementById('searchSuggestions');
         if (suggestionsDiv) {
             suggestionsDiv.style.display = 'block';
             suggestionsDiv.classList.add('visible');
             // 如果沒有輸入內容，只顯示熱門標籤
             if (!searchInput.value.trim()) {
-                const autocompleteResultsDiv = document.getElementById('autocompleteResults');
                 if (autocompleteResultsDiv) {
                     autocompleteResultsDiv.innerHTML = '';
                 }
@@ -75,15 +75,28 @@ async function initializeSearch() {
 
     // 監聽搜尋框失去焦點
     searchInput.addEventListener('blur', (e) => {
-        const suggestionsDiv = document.getElementById('searchSuggestions');
-        // 檢查是否點擊了建議框內的元素
-        if (suggestionsDiv && !suggestionsDiv.contains(e.relatedTarget)) {
-            suggestionsHideTimeout = setTimeout(() => {
-                suggestionsDiv.style.display = 'none';
-                suggestionsDiv.classList.remove('visible');
-            }, 200);
+        // 若新的聚焦目標屬於推薦框或熱門標籤，就不要隱藏
+        if (suggestionsDiv && e.relatedTarget &&
+            (suggestionsDiv.contains(e.relatedTarget) || (popularTagsDiv && popularTagsDiv.contains(e.relatedTarget)))) {
+            return;
         }
+        suggestionsHideTimeout = setTimeout(() => {
+            suggestionsDiv.style.display = 'none';
+            suggestionsDiv.classList.remove('visible');
+        }, 200);
     });
+
+    // ★ 新增：在推薦區域及搜尋結果容器上監聽 mousedown，清除隱藏計時器
+    if (suggestionsDiv) {
+        suggestionsDiv.addEventListener('mousedown', (e) => {
+            clearTimeout(suggestionsHideTimeout);
+        });
+    }
+    if (autocompleteResultsDiv) {
+        autocompleteResultsDiv.addEventListener('mousedown', (e) => {
+            clearTimeout(suggestionsHideTimeout);
+        });
+    }
 }
 
 // 生成熱門標籤
@@ -113,8 +126,8 @@ function displayPopularTags() {
         return;
     }
     popularTagsDiv.innerHTML = popularTags
-        // 若需要讓 span 成為可聚焦元素，也可以加入 tabindex="0"
-        .map(tag => `<span onclick="handleTagClick('${tag}')">${tag}</span>`)
+        // 加入 tabindex="0" 讓熱門標籤可聚焦
+        .map(tag => `<span tabindex="0" onclick="handleTagClick('${tag}')">${tag}</span>`)
         .join('');
 }
 
@@ -138,11 +151,11 @@ function handleSearchInput(e) {
         (Array.isArray(article.tags) && article.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
     ).slice(0, 5);
 
-    // 顯示搜尋結果
+    // 顯示搜尋結果，修改後使結果項目變成可聚焦 (加入 tabindex="0")
     if (matchingArticles.length > 0) {
         autocompleteResultsDiv.innerHTML = matchingArticles
             .map(article => `
-                <div class="result-item" onclick="window.location.href='article_detail.html?id=${article.id}'">
+                <div class="result-item" tabindex="0" onclick="window.location.href='article_detail.html?id=${article.id}'">
                     <div class="title">${highlightMatch(article.title, searchTerm)}</div>
                     <div class="preview">${getContentPreview(article.content, searchTerm)}</div>
                 </div>
