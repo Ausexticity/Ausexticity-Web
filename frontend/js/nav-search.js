@@ -3,6 +3,10 @@ import { fetchArticles } from './misc.js';
 
 let articles = [];
 let popularTags = [];
+let searchContainer = document.querySelector('.search-container');
+let searchInput = document.querySelector('#navSearchInput');
+let searchIcon = document.querySelector('.fa-search');
+let isSearchExpanded = false;
 
 // 初始化搜尋功能
 async function initializeSearch() {
@@ -54,8 +58,29 @@ async function initializeSearch() {
 
     // 監聽搜尋框焦點
     searchInput.addEventListener('focus', () => {
-        if (searchInput.value.trim() || popularTags.length > 0) {
+        const suggestionsDiv = document.getElementById('searchSuggestions');
+        if (suggestionsDiv) {
             suggestionsDiv.style.display = 'block';
+            suggestionsDiv.classList.add('visible');
+            // 如果沒有輸入內容，只顯示熱門標籤
+            if (!searchInput.value.trim()) {
+                const autocompleteResultsDiv = document.getElementById('autocompleteResults');
+                if (autocompleteResultsDiv) {
+                    autocompleteResultsDiv.innerHTML = '';
+                }
+            }
+        }
+    });
+
+    // 監聽搜尋框失去焦點
+    searchInput.addEventListener('blur', (e) => {
+        const suggestionsDiv = document.getElementById('searchSuggestions');
+        // 檢查是否點擊了建議框內的元素
+        if (suggestionsDiv && !suggestionsDiv.contains(e.relatedTarget)) {
+            setTimeout(() => {
+                suggestionsDiv.style.display = 'none';
+                suggestionsDiv.classList.remove('visible');
+            }, 200);
         }
     });
 }
@@ -97,9 +122,10 @@ function handleSearchInput(e) {
     const suggestionsDiv = document.getElementById('searchSuggestions');
     const autocompleteResultsDiv = document.getElementById('autocompleteResults');
 
+    if (!suggestionsDiv || !autocompleteResultsDiv) return;
+
     if (searchTerm.length === 0) {
         autocompleteResultsDiv.innerHTML = '';
-        suggestionsDiv.style.display = popularTags.length > 0 ? 'block' : 'none';
         return;
     }
 
@@ -120,10 +146,8 @@ function handleSearchInput(e) {
                 </div>
             `)
             .join('');
-        suggestionsDiv.style.display = 'block';
     } else {
         autocompleteResultsDiv.innerHTML = '<div class="no-results">沒有找到相關文章</div>';
-        suggestionsDiv.style.display = 'block';
     }
 }
 
@@ -163,6 +187,61 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
+
+// 處理搜尋框的展開收合
+function toggleSearch(e) {
+    if (window.innerWidth <= 576) {
+        e && e.preventDefault();
+        if (!isSearchExpanded) {
+            searchContainer.classList.add('expanded');
+            setTimeout(() => {
+                searchInput.focus();
+            }, 100);
+        } else {
+            searchContainer.classList.remove('expanded');
+            searchInput.value = '';
+            const suggestionsDiv = document.getElementById('searchSuggestions');
+            if (suggestionsDiv) {
+                suggestionsDiv.classList.remove('visible');
+            }
+        }
+        isSearchExpanded = !isSearchExpanded;
+    }
+}
+
+// 點擊搜尋圖標時展開搜尋框
+searchIcon.addEventListener('click', toggleSearch);
+
+// 點擊文檔其他地方時收起搜尋框
+document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 576) {
+        const suggestionsDiv = document.getElementById('searchSuggestions');
+        if (isSearchExpanded &&
+            !searchContainer.contains(e.target) &&
+            (!suggestionsDiv || !suggestionsDiv.contains(e.target))) {
+            toggleSearch(e);
+        }
+    }
+});
+
+// 監聽 ESC 鍵收起搜尋框
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isSearchExpanded) {
+        toggleSearch(e);
+    }
+});
+
+// 監聽視窗大小變化
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 576) {
+        searchContainer.classList.remove('expanded');
+        const suggestionsDiv = document.getElementById('searchSuggestions');
+        if (suggestionsDiv) {
+            suggestionsDiv.classList.remove('visible');
+        }
+        isSearchExpanded = false;
+    }
+});
 
 // 初始化
 document.addEventListener('DOMContentLoaded', initializeSearch); 

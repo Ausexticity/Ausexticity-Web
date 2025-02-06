@@ -95,18 +95,20 @@ header .header-div {
 
 header .header-div .outer-div {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   max-width: 1130px;
   margin: 0 auto;
   padding: 0 20px;
+  position: relative;
 }
 
 header .header-div .outer-div .brand {
   display: flex;
   align-items: center;
   height: 60px;
+  flex: 0 0 auto;
 }
 
 header .header-div .outer-div .brand a {
@@ -135,9 +137,138 @@ header .header-div .outer-div .brand a img:nth-child(2) {
 
 header .header-div .outer-div .links {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  justify-content: center;
+  gap: 20px;
+}
+
+
+header .header-div .outer-div .links:last-child {
+  justify-content: flex-end;
+}
+
+header .header-div .outer-div .links .search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+  width: 300px;
+  transition: width 0.3s ease;
+}
+
+header .header-div .outer-div .links .search-container input {
+  width: 100%;
+  height: 40px;
+  padding: 0 40px 0 15px;
+  border: 2px solid #E06609;
+  border-radius: 15px;
+  font-size: 16px;
+  background-color: #F8E0BC;
+  color: #152F2B;
+  transition: all 0.3s ease;
+}
+
+header .header-div .outer-div .links .search-container input:focus {
+  outline: none;
+  border-color: #E06609;
+  box-shadow: 0 0 10px rgba(224, 102, 9, 0.2);
+  background-color: #FFFFFF;
+}
+
+header .header-div .outer-div .links .search-container .search-button {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+}
+
+header .header-div .outer-div .links .search-container .search-button i {
+  font-size: 18px;
+  color: #E06609;
+}
+
+@media all and (max-width: 992px) {
+  header .header-div .outer-div .links .search-container {
+    width: 250px;
+  }
+}
+
+@media all and (max-width: 768px) {
+  header .header-div .outer-div .links .search-container {
+    width: 200px;
+  }
+}
+
+@media all and (max-width: 640px) {
+  header .header-div .outer-div .links .search-container {
+    width: 100%;
+    margin-right: 10px;
+  }
+
+  header .header-div .outer-div .links .search-container input {
+    height: 36px;
+    font-size: 14px;
+  }
+
+  header .header-div .outer-div .links .search-container .search-button {
+    padding: 6px;
+  }
+
+  header .header-div .outer-div .links .search-container .search-button i {
+    font-size: 14px;
+  }
+}
+
+/* 搜尋建議框樣式 */
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  display: none;
+  padding: 15px;
+}
+
+/* 修改手機版樣式 */
+@media all and (max-width: 576px) {
+  header .header-div .outer-div .links .search-container {
+    width: 40px;
+  }
+
+  header .header-div .outer-div .links .search-container input {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  header .header-div .outer-div .links .search-container.expanded {
+    width: 100%;
+  }
+
+  header .header-div .outer-div .links .search-container.expanded input {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    background-color: #ffffff;
+  }
+
+  .search-suggestions {
+    width: 100%;
+    right: 0;
+  }
+}
+
+header .header-div .outer-div .links .user-icon,
+header .header-div .outer-div .links .login {
+  flex: 0 0 auto;
 }
 
 header .header-div .outer-div .links a {
@@ -213,22 +344,21 @@ main {
 @media all and (max-width: 640px) {
   header .header-div {
     padding: 10px 0;
+    padding-top: 20px;
   }
 
   header .header-div .outer-div {
-    flex-direction: column;
+    flex-direction: row;
     align-items: stretch;
     padding: 0 15px;
   }
 
   header .header-div .outer-div .brand {
     justify-content: center;
-    margin-bottom: 10px;
   }
 
   header .header-div .outer-div .links {
     width: 100%;
-    flex-direction: column;
     gap: 10px;
   }
 
@@ -254,7 +384,7 @@ main {
   .user-icon {
     width: 36px;
     height: 36px;
-    margin: 5px auto;
+    margin: 5px 0;
   }
 
   .block-contact {
@@ -1681,28 +1811,62 @@ header .header-div .outer-div .links .search-container .search-button i {
 .search-container input {
   width: 300px;
   padding: 12px 40px 12px 15px;
-  border: 2px solid #152F2B;
+  border: 2px solid #E06609;
   border-radius: 15px;
   font-size: 16px;
-  background-color: #fff;
+  background-color: #F8E0BC;
+  color: #152F2B;
   transition: all 0.3s ease;
 }
 
 .search-container input:focus {
   width: 350px;
-  border-color: #4A8178;
-  box-shadow: 0 0 10px rgba(74, 129, 120, 0.2);
+  border-color: #E06609;
+  box-shadow: 0 0 10px rgba(224, 102, 9, 0.2);
+  background-color: #FFFFFF;
 }
 
 .search-container .fa-search {
   position: absolute;
   right: 15px;
-  color: #152F2B;
-  font-size: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #E06609;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: all 0.3s ease;
 }
 
-.search-button {
-  display: none;
+.search-container .fa-search:hover {
+  color: #954527;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* 手機版樣式 */
+@media all and (max-width: 576px) {
+  header .header-div .outer-div .links .search-container .fa-search {
+    position: absolute;
+    left: 70%;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #E06609;
+    cursor: pointer;
+    z-index: 2;
+    background: none;
+    border: none;
+    padding: 8px;
+  }
+
+  header .header-div .outer-div .links .search-container.expanded .fa-search {
+    right: 10px;
+    left: auto;
+  }
 }
 
 .search-suggestions {
@@ -2644,5 +2808,149 @@ dotlottie-player {
 
   .section-article-list .block-article-list .outer-div .search-result-lists .item .content .meta {
     padding-top: 12px;
+  }
+}
+
+/* 搜尋框展開收合樣式 */
+@media all and (max-width: 576px) {
+  header .header-div {
+    position: relative;
+    z-index: 1000;
+  }
+
+  header .header-div .outer-div .links .search-container {
+    width: 40px;
+    margin-right: 10px;
+    position: relative;
+  }
+
+  header .header-div .outer-div .links .search-container input {
+    width: 100%;
+    height: 36px;
+    padding: 0 40px 0 15px;
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    border: 2px solid #E06609;
+    border-radius: 18px;
+    background-color: #fff;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  header .header-div .outer-div .links .search-container.expanded {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0 15px;
+    background-color: #F1E3CB;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+  }
+
+  header .header-div .outer-div .links .search-container.expanded input {
+    visibility: visible;
+    opacity: 1;
+    position: relative;
+  }
+
+  header .header-div .outer-div .links .search-container .fa-search {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: #E06609;
+    cursor: pointer;
+    z-index: 2;
+    background: none;
+    border: none;
+    padding: 8px;
+  }
+
+  /* 搜尋建議框樣式 */
+  .search-suggestions {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 15px;
+    right: 15px;
+    width: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    display: none;
+  }
+
+  .search-suggestions.visible {
+    display: block;
+    animation: slideDown 0.3s ease;
+  }
+}
+
+/* 搜尋建議框樣式調整 */
+@media all and (max-width: 576px) {
+  .search-container {
+    position: static;
+  }
+
+  .search-container.expanded {
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: 10px 15px;
+    background: #F1E3CB;
+    z-index: 1000;
+  }
+
+  .search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 15px;
+    right: 15px;
+    width: auto;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-top: 5px;
+    z-index: 1001;
+  }
+
+  .search-container.expanded .search-suggestions {
+    left: 15px;
+    right: 15px;
+  }
+
+  .search-container.expanded input {
+    width: 100%;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .search-container .fa-search {
+    right: 23px;
+  }
+}
+
+/* 在展開搜尋框時添加遮罩 */
+.search-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+@media all and (max-width: 576px) {
+  .search-overlay.active {
+    display: block;
   }
 }
