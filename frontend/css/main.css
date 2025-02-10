@@ -200,7 +200,7 @@ header .header-div .outer-div .links .search-container .search-button i {
   }
 }
 
-@media all and (max-width: 640px) {
+@media all and (max-width: 576px) {
   header .header-div .outer-div .links .search-container {
     width: 100%;
     margin-right: 10px;
@@ -223,7 +223,7 @@ header .header-div .outer-div .links .search-container .search-button i {
 /* 搜尋建議框樣式 */
 .search-suggestions {
   position: absolute;
-  top: calc(100% + 5px);
+  top: calc(100% -10px);
   right: 0;
   width: 100%;
   background: #fff;
@@ -236,6 +236,8 @@ header .header-div .outer-div .links .search-container .search-button i {
 
 /* 修改手機版樣式 */
 @media all and (max-width: 576px) {
+
+  /* 預設情況下，搜尋容器的寬度很小，內部輸入框隱藏 */
   header .header-div .outer-div .links .search-container {
     width: 40px;
   }
@@ -246,8 +248,19 @@ header .header-div .outer-div .links .search-container .search-button i {
     pointer-events: none;
   }
 
+  /* 當搜尋容器加上 expanded 時，寬度擴展至 100% 且內部輸入框顯示 */
   header .header-div .outer-div .links .search-container.expanded {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
+    /* 如果需要高度依 header 高度設定 */
+    height: 80px;
+    background-color: #F1E3CB;
+    /* 可根據設計調整 */
+    z-index: 1000;
+    padding: 0 15px;
+    /* 根據需要調整內距 */
   }
 
   header .header-div .outer-div .links .search-container.expanded input {
@@ -258,7 +271,9 @@ header .header-div .outer-div .links .search-container .search-button i {
   }
 
   .search-suggestions {
-    width: 100%;
+    top: calc(100% - 10px) !important;
+    width: auto;
+    margin: 0 15px;
     right: 0;
   }
 }
@@ -319,7 +334,7 @@ main {
   }
 
   header .header-div .outer-div .brand {
-    height: 45px;
+    height: 50px;
   }
 
   header .header-div .outer-div .brand a img:nth-child(1) {
@@ -337,7 +352,7 @@ main {
   }
 }
 
-@media all and (max-width: 640px) {
+@media all and (max-width: 576px) {
   header .header-div {
     padding: 10px 0;
     padding-top: 20px;
@@ -359,8 +374,7 @@ main {
   }
 
   header .header-div .outer-div .links .search-container {
-    width: 100%;
-    margin: 10px 0;
+    width: 100% !important;
   }
 
   header .header-div .outer-div .links .search-container input {
@@ -2086,7 +2100,7 @@ header .header-div .outer-div .links .search-container {
   display: flex;
   align-items: center;
   margin-right: 20px;
-  width: 300px;
+  width: 350px;
 }
 
 header .header-div .outer-div .links .search-container input {
@@ -2126,19 +2140,19 @@ header .header-div .outer-div .links .search-container .search-button i {
 
 @media all and (max-width: 992px) {
   header .header-div .outer-div .links .search-container {
-    width: 250px;
+    width: 350px;
   }
 }
 
 @media all and (max-width: 768px) {
   header .header-div .outer-div .links .search-container {
-    width: 200px;
+    width: 280px;
   }
 }
 
 @media all and (max-width: 640px) {
   header .header-div .outer-div .links .search-container {
-    width: 100%;
+    width: 220px;
     margin-right: 10px;
   }
 
@@ -2244,12 +2258,11 @@ header .header-div .outer-div .links .search-container .search-button i {
 
 .search-suggestions {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 10px);
   left: 0;
   background: #fff;
   border-radius: 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-top: 8px;
   padding: 15px;
   z-index: 1000;
 }
@@ -3191,4 +3204,26 @@ header .header-div .outer-div .links .search-container .search-button i {
   .markdown-body img {
     margin: 16px 0;
   }
+}
+
+/* 新增: 搜尋框展開後填滿 header 整個寬度 */
+header {
+  position: relative;
+}
+
+header .nav-search-input.expanded {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  z-index: 999;
+  transition: all 0.3s ease;
+  padding: 0 15px;
+  /* 根據設計需求調整左右間距 */
+}
+
+/* 可選：如果希望搜尋框的高度根據 header 調整，也可額外設定高度 */
+header .nav-search-input.expanded {
+  height: 50px;
+  /* 或設定成 header 的高度 */
 }

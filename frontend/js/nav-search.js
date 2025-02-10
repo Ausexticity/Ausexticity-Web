@@ -5,9 +5,8 @@ let articles = [];
 let popularTags = [];
 let searchContainer = document.querySelector('.search-container');
 let searchInput = document.querySelector('#navSearchInput');
-let searchIcon = document.querySelector('.fa-search');
 let isSearchExpanded = false;
-let suggestionsHideTimeout; // 新增：儲存建議框隱藏的計時器
+let suggestionsHideTimeout;
 
 // 初始化搜尋功能
 async function initializeSearch() {
@@ -47,15 +46,12 @@ async function initializeSearch() {
         }
     });
 
-    // 監聽按下 button 事件
-    navSearchButton.addEventListener('click', handleSearch);
-
-    // 擴充點擊判斷，點擊在熱門標籤或推薦區域內就不隱藏推薦框
-    document.addEventListener('click', (e) => {
-        if (!searchInput.contains(e.target) &&
-            !suggestionsDiv.contains(e.target) &&
-            (!popularTagsDiv || !popularTagsDiv.contains(e.target))) {
-            suggestionsDiv.style.display = 'none';
+    // 監聽搜尋按鈕點擊事件
+    navSearchButton.addEventListener('click', function (e) {
+        if (window.innerWidth <= 576) {
+            toggleSearch(e);
+        } else {
+            handleSearch(e);
         }
     });
 
@@ -86,17 +82,82 @@ async function initializeSearch() {
         }, 200);
     });
 
-    // ★ 新增：在推薦區域及搜尋結果容器上監聽 mousedown，清除隱藏計時器
-    if (suggestionsDiv) {
-        suggestionsDiv.addEventListener('mousedown', (e) => {
-            clearTimeout(suggestionsHideTimeout);
-        });
+    // 監聽搜尋框點擊事件
+    searchInput.addEventListener('click', (e) => {
+        // 清除隱藏建議框的計時器，避免因失焦而隱藏建議框
+        clearTimeout(suggestionsHideTimeout);
+    });
+
+    // 監聽搜尋結果點擊事件
+    autocompleteResultsDiv.addEventListener('click', (e) => {
+        // 清除隱藏建議框的計時器，避免因失焦而隱藏建議框
+        clearTimeout(suggestionsHideTimeout);
+    });
+
+    // 監聽熱門標籤點擊事件
+    popularTagsDiv.addEventListener('click', (e) => {
+        // 清除隱藏建議框的計時器，避免因失焦而隱藏建議框
+        clearTimeout(suggestionsHideTimeout);
+    });
+
+    // 處理搜尋框的展開收合
+    function toggleSearch(e) {
+        e && e.preventDefault();
+        if (window.innerWidth <= 576) {
+            if (!isSearchExpanded) {
+                // 在手機上，將 "expanded" 類別加到搜尋容器上，使其展開
+                searchContainer.classList.add('expanded');
+                setTimeout(() => {
+                    searchInput.focus();
+                }, 100);
+            } else {
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+                    return;
+                }
+                // 若搜尋框未輸入內容，則移除展開狀態
+                searchContainer.classList.remove('expanded');
+                searchInput.value = '';
+                const suggestionsDiv = document.getElementById('searchSuggestions');
+                if (suggestionsDiv) {
+                    suggestionsDiv.classList.remove('visible');
+                }
+            }
+            isSearchExpanded = !isSearchExpanded;
+        }
     }
-    if (autocompleteResultsDiv) {
-        autocompleteResultsDiv.addEventListener('mousedown', (e) => {
-            clearTimeout(suggestionsHideTimeout);
-        });
-    }
+
+    // 監聽文檔點擊事件
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 576) {
+            const suggestionsDiv = document.getElementById('searchSuggestions');
+            if (isSearchExpanded &&
+                !searchContainer.contains(e.target) &&
+                (!suggestionsDiv || !suggestionsDiv.contains(e.target))) {
+                toggleSearch(e);
+            }
+        }
+    });
+
+    // 監聽 ESC 鍵事件
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isSearchExpanded) {
+            toggleSearch(e);
+        }
+    });
+
+    // 監聽視窗大小變化事件
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 576) {
+            searchContainer.classList.remove('expanded');
+            const suggestionsDiv = document.getElementById('searchSuggestions');
+            if (suggestionsDiv) {
+                suggestionsDiv.classList.remove('visible');
+            }
+            isSearchExpanded = false;
+        }
+    });
 }
 
 // 生成熱門標籤
@@ -206,60 +267,23 @@ function debounce(func, wait) {
     };
 }
 
-// 處理搜尋框的展開收合
-function toggleSearch(e) {
-    if (window.innerWidth <= 576) {
-        e && e.preventDefault();
-        if (!isSearchExpanded) {
-            searchContainer.classList.add('expanded');
-            setTimeout(() => {
+// 新增功能: 當點擊搜尋按鈕時，切換搜尋框的展開狀態，並使其佔滿整個 header 的寬度
+(function () {
+    var searchButton = document.querySelector('.nav-search-btn');
+    var searchInput = document.querySelector('.nav-search-input');
+    if (searchButton && searchInput) {
+        searchButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            // 切換 expanded 類別
+            searchInput.classList.toggle('expanded');
+            if (searchInput.classList.contains('expanded')) {
                 searchInput.focus();
-            }, 100);
-        } else {
-            searchContainer.classList.remove('expanded');
-            searchInput.value = '';
-            const suggestionsDiv = document.getElementById('searchSuggestions');
-            if (suggestionsDiv) {
-                suggestionsDiv.classList.remove('visible');
             }
-        }
-        isSearchExpanded = !isSearchExpanded;
+        });
     }
-}
-
-// 點擊搜尋圖標時展開搜尋框
-searchIcon.addEventListener('click', toggleSearch);
-
-// 點擊文檔其他地方時收起搜尋框
-document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 576) {
-        const suggestionsDiv = document.getElementById('searchSuggestions');
-        if (isSearchExpanded &&
-            !searchContainer.contains(e.target) &&
-            (!suggestionsDiv || !suggestionsDiv.contains(e.target))) {
-            toggleSearch(e);
-        }
-    }
-});
-
-// 監聽 ESC 鍵收起搜尋框
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isSearchExpanded) {
-        toggleSearch(e);
-    }
-});
-
-// 監聽視窗大小變化
-window.addEventListener('resize', () => {
-    if (window.innerWidth > 576) {
-        searchContainer.classList.remove('expanded');
-        const suggestionsDiv = document.getElementById('searchSuggestions');
-        if (suggestionsDiv) {
-            suggestionsDiv.classList.remove('visible');
-        }
-        isSearchExpanded = false;
-    }
-});
+})();
 
 // 初始化
-document.addEventListener('DOMContentLoaded', initializeSearch); 
+document.addEventListener('DOMContentLoaded', function () {
+    initializeSearch();
+});
