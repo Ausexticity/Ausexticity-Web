@@ -31,8 +31,16 @@ function updateHeader() {
     }
 }
 
+// 追蹤進行中的文章請求
+let currentArticlesPromise = null;
+
 // 獲取文章資料，使用 LocalStorage 進行快取
 async function fetchArticles(force = false) {
+    // 如果已經有請求在進行中，直接返回該 Promise
+    if (currentArticlesPromise) {
+        return currentArticlesPromise;
+    }
+
     const cachedArticles = localStorage.getItem(ARTICLES_KEY);
     const cachedTimestamp = localStorage.getItem(ARTICLES_TIMESTAMP_KEY);
     const now = Date.now();
@@ -43,31 +51,39 @@ async function fetchArticles(force = false) {
         return JSON.parse(cachedArticles);
     }
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/articles`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                // 'Authorization': `Bearer ${localStorage.getItem('token')}` // 如需授權，視後端需求而定
-            },
-        });
+    // 建立新的請求 Promise
+    currentArticlesPromise = (async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/articles`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 'Authorization': `Bearer ${localStorage.getItem('token')}` // 如需授權，視後端需求而定
+                },
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (response.status === 200) {
-            localStorage.setItem(ARTICLES_KEY, JSON.stringify(data.articles));
-            localStorage.setItem(ARTICLES_TIMESTAMP_KEY, now);
-            console.log('從 API 獲取並快取文章資料');
-            return data.articles;
-        } else {
-            alert(`獲取文章失敗: ${data.detail}`);
+            if (response.status === 200) {
+                localStorage.setItem(ARTICLES_KEY, JSON.stringify(data.articles));
+                localStorage.setItem(ARTICLES_TIMESTAMP_KEY, now);
+                console.log('從 API 獲取並快取文章資料');
+                return data.articles;
+            } else {
+                alert(`獲取文章失敗: ${data.detail}`);
+                return cachedArticles ? JSON.parse(cachedArticles) : [];
+            }
+        } catch (error) {
+            console.error('獲取文章時發生錯誤:', error);
+            alert('獲取文章時發生錯誤，請稍後再試。');
             return cachedArticles ? JSON.parse(cachedArticles) : [];
+        } finally {
+            // 請求完成後重置 Promise
+            currentArticlesPromise = null;
         }
-    } catch (error) {
-        console.error('獲取文章時發生錯誤:', error);
-        alert('獲取文章時發生錯誤，請稍後再試。');
-        return cachedArticles ? JSON.parse(cachedArticles) : [];
-    }
+    })();
+
+    return currentArticlesPromise;
 }
 
 // 格式化發佈日期的函式
@@ -144,13 +160,54 @@ export async function uploadImage(file) {
 }
 
 /**
+ * 驗證 Firebase Storage URL 並取得 blob 名稱
+ * @param {string} url - Firebase Storage URL
+ * @returns {string|null} blob 名稱，如果 URL 無效則返回 null
+ */
+function getBlobName(url) {
+    try {
+        const parsedUrl = new URL(url);
+        
+        // 驗證是否為 Firebase Storage 的合法網址
+        if (parsedUrl.hostname !== 'storage.googleapis.com') {
+            console.error('非法的 Storage 網域');
+            return null;
+        }
+        
+        // 解析路徑取得 bucket 名稱和檔案路徑
+        const pathParts = parsedUrl.pathname.split('/').filter(part => part);
+        if (pathParts.length < 2) {
+            console.error('無效的 Storage URL 格式');
+            return null;
+        }
+        
+        // 驗證 bucket 名稱
+        const bucketName = pathParts[0];
+        if (bucketName !== 'eros-web-94e22.firebasestorage.app') {
+            console.error('Storage bucket 不符合');
+            return null;
+        }
+        
+        // 取得檔案路徑 (去除 bucket 名稱後的部分)
+        return pathParts.slice(1).join('/');
+    } catch (error) {
+        console.error('URL 解析錯誤:', error);
+        return null;
+    }
+}
+
+/**
  * 刪除圖片
  * @param {string} imageUrl - 要刪除的圖片 URL
- * 
- * @app.delete("/api/delete_image")
-def delete_image(request: DeleteImageRequest, user: dict = Depends(verify_token)):
+ * @returns {Promise<boolean>} 刪除成功返回 true，失敗返回 false
  */
 export async function deleteImage(imageUrl) {
+    // 先驗證 URL 格式
+    if (!getBlobName(imageUrl)) {
+        console.error('無效的 Storage URL，跳過刪除操作');
+        return false;
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/delete_image`, {
             method: 'DELETE',
@@ -165,13 +222,12 @@ export async function deleteImage(imageUrl) {
             return true;
         } else {
             const errorData = await response.json();
-            alert(`刪除圖片時發生錯誤: ${errorData.detail}`);
-            return null;
+            console.error(`刪除圖片時發生錯誤: ${errorData.detail}`);
+            return false;
         }
     } catch (error) {
         console.error('刪除圖片時發生錯誤:', error);
-        alert('刪除圖片時發生錯誤，請稍後再試。');
-        return null;
+        return false;
     }
 }
 

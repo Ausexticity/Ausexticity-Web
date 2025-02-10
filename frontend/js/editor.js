@@ -59,6 +59,14 @@ export function populateForm(article) {
     document.getElementById('title').value = article.title;
     document.getElementById('content').value = article.content;
 
+    // 設定類別，如果沒有類別則預設為一般文章
+    const categorySelect = document.getElementById('category');
+    if (article.category) {
+        categorySelect.value = article.category;
+    } else {
+        categorySelect.value = '一般文章';
+    }
+
     // 設定標籤
     if (article.tags) {
         article.tags.forEach(tag => addTag(tag));
@@ -90,6 +98,7 @@ export async function submitArticle() {
     const title = document.getElementById('title').value.trim();
     const content = document.getElementById('content').value.trim();
     const tags = getSelectedTags();
+    const category = document.getElementById('category').value;
     const imageInput = document.getElementById('image-upload');
     const imageUrlInput = document.getElementById('image-url');
     let imageUrl = '';
@@ -116,7 +125,8 @@ export async function submitArticle() {
         content,
         tags,
         image_url: imageUrl,
-        user_id: userId
+        user_id: userId,
+        category
     };
 
     try {
@@ -156,6 +166,7 @@ export async function updateArticle() {
     const title = document.getElementById('title').value.trim();
     const content = document.getElementById('content').value.trim();
     const tags = getSelectedTags();
+    const category = document.getElementById('category').value;
     const imageInput = document.getElementById('image-upload');
     const imageUrlInput = document.getElementById('image-url');
     let imageUrl = originalImageUrl; // 預設使用原始圖片網址
@@ -188,7 +199,8 @@ export async function updateArticle() {
         content,
         tags,
         image_url: imageUrl,
-        user_id: userId
+        user_id: userId,
+        category
     };
 
     try {

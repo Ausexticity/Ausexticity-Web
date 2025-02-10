@@ -24,6 +24,7 @@ import asyncio
 from typing import Tuple, Optional, Union
 from google.api_core.exceptions import NotFound  # 若有需要，可引入對應的例外
 import urllib.parse
+from urllib.parse import urlparse
 
 app = FastAPI()
 logger = logging.getLogger('uvicorn.error')
@@ -106,38 +107,6 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
             headers={"WWW-Authenticate": "Bearer"},
         )
         
-def get_blob_name(url):
-    """
-    從 Firebase Storage URL 中取得 blob_name
-
-    URL 範例:
-    https://firebasestorage.googleapis.com/v0/b/eros-web-94e22.firebasestorage.app/o/images%2Fncc%2F2025-01-19T18%3A01%3A51.862511_%E6%B2%92%E6%9C%89%E7%B7%9A%E6%A2%9D%E7%9A%84.png?alt=media&token=93a71ec5-d42b-479b-b704-e8a8184c9162
-
-    程式邏輯:
-    1. 解析 URL 並取得 path 部分。
-    2. 由 path 中找到 "/o/" 之後的編碼字串，此部分即為 blob 的編碼名稱。
-    3. 利用 urllib.parse.unquote 將編碼字串進行解碼，取得原始 blob_name。
-
-    回傳結果:
-    "images/ncc/2025-01-19T18:01:51.862511_沒有線條的.png"
-    """
-    parsed_url = urllib.parse.urlparse(url)
-    path = parsed_url.path  # 例如: "/v0/b/eros-web-94e22.firebasestorage.app/o/images%2Fncc%2F2025-01-19T18%3A01%3A51.862511_%E6%B2%92%E6%9C%89%E7%B7%9A%E6%A2%9D%E7%9A%84.png"
-    
-    marker = "/o/"
-    marker_index = path.find(marker)
-    if marker_index == -1:
-        return None  # 若找不到 "/o/" 則回傳 None
-
-    # 取得 "/o/" 之後的部分 (仍為 URL 編碼的 blob_name)
-    blob_encoded = path[marker_index + len(marker):]
-
-    # 解碼取得原始 blob_name
-    blob_name = urllib.parse.unquote(blob_encoded)
-    return blob_name
-
-
-
 
 class LoginRequest(BaseModel):
     username: str
@@ -347,7 +316,9 @@ class Article(BaseModel):
     tags: list[str]  # 將 category 改為 tags，並使用列表來儲存多個標籤
     image_url: str = None
     user_id: str = None
+    category: str = None
     published_at: datetime.datetime = None
+    
 
 # 發布新文章的端點
 @app.post("/api/articles", dependencies=[Depends(verify_token)], status_code=201)
@@ -469,4 +440,3 @@ def delete_image(request: DeleteImageRequest, user: dict = Depends(verify_token)
         else:
             logger.error(f"刪除圖片時出錯: {str(e)}")
             raise HTTPException(status_code=500, detail=f"刪除圖片時出錯: {str(e)}")
-

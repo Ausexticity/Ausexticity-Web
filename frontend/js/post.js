@@ -92,6 +92,24 @@ async function initializeTags() {
 				addTag(e.target.textContent);
 			}
 		});
+
+		// 初始化圖片URL輸入處理
+		const imageUrlInput = document.getElementById('image-url');
+		if (imageUrlInput) {
+			// 移除原有的套用按鈕
+			document.getElementById('apply-url')?.remove();
+			
+			// 添加 input 事件監聽器，實現即時預覽
+			imageUrlInput.addEventListener('input', debounce(function(e) {
+				const url = e.target.value.trim();
+				if (url) {
+					applyImageUrl(url);
+				} else {
+					// 如果輸入框為空，重置圖片預覽
+					$('#uploadImage').attr('src', 'images/default_detail_img.png').parent().css('display', 'none');
+				}
+			}, 500)); // 500ms 的防抖延遲
+		}
 	} catch (error) {
 		console.error('初始化標籤時發生錯誤:', error);
 	}
@@ -178,6 +196,19 @@ export function applyImageUrl(url) {
 	}
 }
 
+// 防抖函數
+function debounce(func, wait) {
+	let timeout;
+	return function executedFunction(...args) {
+		const later = () => {
+			clearTimeout(timeout);
+			func(...args);
+		};
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+	};
+}
+
 // 將需要在全域使用的函數掛載到 window 對象上
 window.readURL = readURL;
 window.removeImage = removeImage;
@@ -202,17 +233,4 @@ document.addEventListener('DOMContentLoaded', () => {
 		readURL(this, '#uploadImage');
 		$('#image-url').val(''); // 清空網址輸入框
 	});
-
-	// 綁定套用網址按鈕的點擊事件
-	$('#apply-url').click(function () {
-		const url = $('#image-url').val().trim();
-		if (url) {
-			applyImageUrl(url);
-			$('#image-upload').val(''); // 清空文件輸入
-		} else {
-			alert('請輸入圖片網址');
-		}
-	});
 });
-
-

@@ -36,8 +36,11 @@ function initializeBanner(articles) {
     const bannerSlider = document.getElementById('bannerSlider');
     const bannerControls = document.getElementById('bannerControls');
 
-    // 過濾NEWS類別的文章
-    const newsArticles = articles.filter(article => article.category === "NEWS");
+    // 過濾新聞類別的文章，並按發布時間排序，取前4篇
+    const newsArticles = articles
+        .filter(article => article.category === "新聞")
+        .sort((a, b) => new Date(b.published_at) - new Date(a.published_at))
+        .slice(0, 4);
 
     // 創建輪播項目
     newsArticles.forEach((article, index) => {
@@ -53,8 +56,8 @@ function initializeBanner(articles) {
                 </div>
                 <div class="col02">
                     <a href="article_detail.html?id=${article.id}">
-                        <h1>${truncateTitle(article.title, 6)}</h1>
-                        <p>${article.content || '內文內文內文內文 內文內文內文'}</p>
+                        <h1>${truncateTitle(article.title, 8)}</h1>
+                        <p>${article.content ? truncateTitle(article.content, 100) : '內文內文內文內文 內文內文內文'}</p>
                     </a>
                 </div>
             </div>

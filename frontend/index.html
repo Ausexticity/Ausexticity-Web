@@ -102,7 +102,7 @@
                 <div class="outer-div">
                     <h2>讓 Dr.告 訴 你</h2>
                     <div class="new-lists-wrapper">
-                        <div class="new-lists" id="doctor-list">
+                        <div class="search-result-lists" id="doctor-list">
                             <!-- 動態載入的 doctor-list 文章 -->
                         </div>
                         <div class="more">
@@ -141,7 +141,6 @@
 
 
         document.addEventListener('DOMContentLoaded', async () => {
-            updateHeader();
 
             try {
                 // 獲取文章資料
@@ -163,35 +162,89 @@
                     }
                 });
 
-                // 處理 Dr.告訴你的文章並載入到 doctor-list
+                // 處理首頁文章的文章並載入到 doctor-list
                 const doctorList = document.getElementById('doctor-list');
-                // 清空現有的 doctor-list 內容
-                doctorList.innerHTML = '';
+                if (doctorList) {
+                    // 先過濾出首頁文章類別的文章，並按發布時間排序
+                    const doctorArticles = articles
+                        .filter(article => article.category === "首頁文章")
+                        .sort((a, b) => new Date(b.published_at) - new Date(a.published_at))
+                        .slice(0, 4); // 只取前4篇
 
-                articles.forEach(article => {
-                    if (article.category === "Dr.告訴你") {
+                    doctorArticles.forEach(article => {
                         const articleElement = document.createElement('div');
                         articleElement.classList.add('item');
 
-                        articleElement.innerHTML = `
-                            <a href="article_detail.html?id=${article.id}">
-                                <span>${article.title}</span>
-                            </a>
-                        `;
+                        const imageUrl = article.image_url || 'images/default-article.jpg';
+                        const preview = article.preview || (article.content ? article.content.substring(0, 100) + '...' : '');
+
+                        // 創建主要的連結元素
+                        const linkElement = document.createElement('a');
+                        linkElement.href = `article_detail.html?id=${article.id}`;
+
+                        // 創建圖片區塊
+                        const boxDiv = document.createElement('div');
+                        boxDiv.className = 'box';
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imageUrl;
+                        imgElement.alt = article.title;
+                        boxDiv.appendChild(imgElement);
+
+                        // 創建內容區塊
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'content';
+
+                        // 創建標題區塊
+                        const titleWrapper = document.createElement('div');
+                        titleWrapper.className = 'title-wrapper';
+                        const titleElement = document.createElement('h3');
+                        titleElement.className = 'title';
+                        titleElement.textContent = article.title;
+                        titleWrapper.appendChild(titleElement);
+
+                        // 創建標籤區塊
+                        const tagsDiv = document.createElement('div');
+                        tagsDiv.className = 'tags';
+                        if (article.tags && Array.isArray(article.tags)) {
+                            article.tags.forEach(tag => {
+                                const tagSpan = document.createElement('span');
+                                tagSpan.className = 'tag';
+                                tagSpan.textContent = tag;
+                                tagSpan.style.cursor = 'pointer';
+                                tagSpan.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    window.location.href = `search.html?q=${encodeURIComponent(tag)}`;
+                                });
+                                tagsDiv.appendChild(tagSpan);
+                            });
+                        }
+
+                        // 創建預覽文字區塊
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'preview';
+                        previewDiv.textContent = preview;
+
+                        // 組合所有元素
+                        contentDiv.appendChild(titleWrapper);
+                        contentDiv.appendChild(tagsDiv);
+                        contentDiv.appendChild(previewDiv);
+
+                        linkElement.appendChild(boxDiv);
+                        linkElement.appendChild(contentDiv);
+                        articleElement.appendChild(linkElement);
 
                         doctorList.appendChild(articleElement);
-                    }
-                });
+                    });
 
-                // 所有內容載入完成後，隱藏 loading 動畫
-                document.querySelector('dotlottie-player').style.display = 'none';
+                    // 所有內容載入完成後，隱藏 loading 動畫
+                    document.querySelector('dotlottie-player').style.display = 'none';
 
-
+                }
             } catch (error) {
                 console.error('獲取文章資料失敗:', error);
                 // 發生錯誤時也要隱藏 loading 動畫
                 document.querySelector('dotlottie-player').style.display = 'none';
-
             }
         });
     </script>
