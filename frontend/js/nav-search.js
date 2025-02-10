@@ -111,12 +111,18 @@ async function initializeSearch() {
                     searchInput.focus();
                 }, 100);
             } else {
-                const query = searchInput.value.trim();
-                if (query) {
-                    window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-                    return;
+                // 已展開時，根據事件來源判斷動作
+                // 使用 closest 檢查 e.target 是否在搜尋按鈕內（考量到可能點擊到內部元素）
+                const triggeredBySearchButton = e && e.target && ((e.target.id === 'navSearchButton') || (e.target.closest && e.target.closest('#navSearchButton')));
+                if (triggeredBySearchButton) {
+                    // 如果點擊來源為搜尋按鈕，且輸入框有內容，就送出搜尋
+                    const query = searchInput.value.trim();
+                    if (query) {
+                        window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+                        return;
+                    }
                 }
-                // 若搜尋框未輸入內容，則移除展開狀態
+                // 其他情況視為取消搜尋：僅移除展開狀態並清空輸入
                 searchContainer.classList.remove('expanded');
                 searchInput.value = '';
                 const suggestionsDiv = document.getElementById('searchSuggestions');

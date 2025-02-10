@@ -36,11 +36,11 @@ window.goToSlide = function (index) {
 async function checkImageAspectRatio(imageUrl) {
     return new Promise((resolve) => {
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
             const aspectRatio = this.width / this.height;
             resolve(aspectRatio >= 1.5 ? 'wide' : 'tall');
         };
-        img.onerror = function() {
+        img.onerror = function () {
             resolve('wide'); // 預設使用寬版布局
         };
         img.src = imageUrl;
@@ -70,22 +70,30 @@ function initializeBanner(articles) {
         .filter(article => article.category === "新聞")
         .sort((a, b) => new Date(b.published_at) - new Date(a.published_at))
         .slice(0, 4); // 只顯示前4篇新聞
-    
+
     if (!bannerSlider || !bannerControls) return;
 
     // 清空現有內容
     bannerSlider.innerHTML = '';
     bannerControls.innerHTML = '';
-    
+
     // 創建輪播項目
     const createSlides = async () => {
+        // 判斷是否為手機畫面（螢幕寬度小於或等於 576px）
+        const isMobile = window.matchMedia("(max-width: 576px)").matches;
+        // 根據畫面尺寸設定截取長度，手機版比桌機截取更短
+        const titleLimit = isMobile ? 15 : 20;
+        const contentLimitWide = isMobile ? 70 : 100;
+        const contentLimitTall = isMobile ? 90 : 150;
+
         for (let [index, article] of newsArticles.entries()) {
             const slide = document.createElement('div');
             slide.className = 'banner-slide';
-            
+
             const imageUrl = article.image_url || 'images/pexels-aryane-vilarim-2869078-1.png';
-            const layoutType = await checkImageAspectRatio(imageUrl);
-            
+            // 如果在手機版，直接使用 wide 的版型
+            const layoutType = isMobile ? 'wide' : await checkImageAspectRatio(imageUrl);
+
             // 根據圖片比例設置不同的布局
             if (layoutType === 'wide') {
                 const gradientStyle = generateGradientStyle(true);
@@ -94,8 +102,8 @@ function initializeBanner(articles) {
                         <div class="background-image" style="background-image: url(${imageUrl});">
                             <div class="content-overlay" style="background: ${gradientStyle}">
                                 <a href="article_detail.html?id=${article.id}">
-                                    <h1>${truncateTitle(article.title, 20)}</h1>
-                                    <p>${article.content ? truncateTitle(article.content, 100) : '內文內文內文內文 內文內文內文'}</p>
+                                    <h1>${truncateTitle(article.title, titleLimit)}</h1>
+                                    <p>${article.content ? truncateTitle(article.content, contentLimitWide) : '內文內文內文內文 內文內文內文'}</p>
                                 </a>
                             </div>
                         </div>
@@ -108,8 +116,8 @@ function initializeBanner(articles) {
                     <div class="tall-layout">
                         <div class="content-side" style="background: ${gradientStyle}">
                             <a href="article_detail.html?id=${article.id}">
-                                <h1>${truncateTitle(article.title, 20)}</h1>
-                                <p>${article.content ? truncateTitle(article.content, 150) : '內文內文內文內文 內文內文內文'}</p>
+                                <h1>${truncateTitle(article.title, titleLimit)}</h1>
+                                <p>${article.content ? truncateTitle(article.content, contentLimitTall) : '內文內文內文內文 內文內文內文'}</p>
                             </a>
                         </div>
                         <div class="image-side" style="background-image: url(${imageUrl});">
@@ -118,7 +126,7 @@ function initializeBanner(articles) {
                     </div>
                 `;
             }
-            
+
             bannerSlider.appendChild(slide);
 
             // 創建控制點
