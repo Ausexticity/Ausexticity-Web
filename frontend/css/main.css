@@ -432,6 +432,7 @@ main {
 
   .block-contact .outer-div .info p {
     font-size: 13px;
+    max-width: 95%;
   }
 }
 
@@ -544,8 +545,8 @@ main {
 .section-home-search-news {
   background-image: url(./../images/home_deco.svg);
   background-position: center bottom;
-  background-repeat: no-repeat;
   background-size: 100% auto;
+  background-repeat: no-repeat;
   margin-top: 80px;
 }
 
@@ -978,7 +979,7 @@ main {
   text-align: center;
   font-weight: 700;
   padding-bottom: 25px;
-  font-family: "Noto Sans TC", serif;
+  margin-bottom: 40px;
   position: relative;
 }
 
@@ -2327,62 +2328,206 @@ header .header-div .outer-div .links .search-container .search-button i {
   position: relative;
   overflow: hidden;
   border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .banner-slider {
   display: flex;
   transition: transform 0.5s ease-in-out;
-  height: 400px;
+  height: 450px;
 }
 
 .banner-slide {
   min-width: 100%;
   position: relative;
-}
-
-.banner-slide .two-cols {
-  display: flex;
   height: 100%;
 }
 
-.banner-slide .col01 {
-  width: 65%;
+/* 寬圖片布局 */
+.banner-slide .wide-layout {
+  width: 100%;
+  height: 100%;
   position: relative;
-  overflow: hidden;
 }
 
-.banner-slide .col01 .img {
+.banner-slide .wide-layout .background-image {
   width: 100%;
   height: 100%;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  border-radius: 20px 0 0 20px;
+  position: relative;
 }
 
-.banner-slide .col02 {
-  width: 35%;
-  padding: 40px;
-  background: #954427;
-  border-radius: 0 20px 20px 0;
+.banner-slide .wide-layout .content-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(149, 68, 39, 0.95) 70%, rgba(149, 68, 39, 0) 100%);
+  padding: 40px 60px 40px 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  border-radius: 20px 0 0 20px;
 }
 
-.banner-slide .col02 h1 {
+.banner-slide .wide-layout .content-overlay h1 {
   color: #F1E3CB;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   margin-bottom: 20px;
   line-height: 1.3;
 }
 
-.banner-slide .col02 p {
+.banner-slide .wide-layout .content-overlay p {
   color: #fff;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.6;
   opacity: 0.9;
+}
+
+/* 長圖片布局 */
+.banner-slide .tall-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-slide .tall-layout .content-side {
+  width: 60%;
+  padding: 40px 60px 40px 80px;
+  background: linear-gradient(90deg, rgba(149, 68, 39, 0.95) 70%, rgba(149, 68, 39, 0.8) 100%);
+  border-radius: 20px 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+.banner-slide .tall-layout .image-side {
+  width: 40%;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 0 20px 20px 0;
+  position: relative;
+}
+
+.banner-slide .tall-layout .image-side::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(149, 68, 39, 0.3) 0%, rgba(149, 68, 39, 0) 100%);
+  border-radius: 0 20px 20px 0;
+}
+
+.banner-slide .tall-layout .content-side h1 {
+  color: #F1E3CB;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.3;
+}
+
+.banner-slide .tall-layout .content-side p {
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+/* 響應式調整 */
+@media (max-width: 1024px) {
+  .home-banner {
+    width: 90%;
+  }
+
+  .banner-slider {
+    height: 400px;
+  }
+
+  .banner-slide .wide-layout .content-overlay,
+  .banner-slide .tall-layout .content-side {
+    padding: 30px;
+  }
+
+  .banner-slide .wide-layout .content-overlay h1,
+  .banner-slide .tall-layout .content-side h1 {
+    font-size: 28px;
+  }
+
+  .banner-slide .wide-layout .content-overlay p,
+  .banner-slide .tall-layout .content-side p {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-banner {
+    width: 95%;
+  }
+
+  .banner-slider {
+    height: 350px;
+  }
+
+  .banner-slide .wide-layout .content-overlay {
+    width: 70%;
+  }
+
+  .banner-slide .tall-layout .content-side {
+    width: 70%;
+  }
+
+  .banner-slide .tall-layout .image-side {
+    width: 30%;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-slider {
+    height: 300px;
+  }
+
+  .banner-slide .wide-layout .content-overlay h1,
+  .banner-slide .tall-layout .content-side h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .banner-slide .wide-layout .content-overlay p,
+  .banner-slide .tall-layout .content-side p {
+    font-size: 14px;
+  }
+
+  .banner-slide .tall-layout {
+    flex-direction: column;
+  }
+
+  .banner-slide .tall-layout .content-side {
+    width: 100%;
+    height: 60%;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .banner-slide .tall-layout .image-side {
+    width: 100%;
+    height: 40%;
+    border-radius: 0 0 20px 20px;
+  }
+
+  .banner-slide .tall-layout .image-side::before {
+    background: linear-gradient(180deg, rgba(149, 68, 39, 0.3) 0%, rgba(149, 68, 39, 0) 100%);
+    border-radius: 0 0 20px 20px;
+  }
 }
 
 .banner-controls {
@@ -2399,14 +2544,14 @@ header .header-div .outer-div .links .search-container .search-button i {
 .banner-dot {
   width: 10px;
   height: 10px;
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: 0.3s ease;
 }
 
 .banner-dot.active {
-  background-color: #fff;
+  background: #fff;
   transform: scale(1.2);
 }
 
@@ -2443,180 +2588,142 @@ header .header-div .outer-div .links .search-container .search-button i {
   font-size: 20px;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
   .home-banner {
     width: 90%;
-    margin: 0 auto;
   }
 
   .banner-slider {
-    height: 350px;
+    height: 400px;
   }
 
-  .banner-slide .col02 {
+  .banner-slide .wide-layout .content-overlay,
+  .banner-slide .tall-layout .content-side {
     padding: 30px;
   }
 
-  .banner-slide .col02 h1 {
-    font-size: 24px;
+  .banner-slide .wide-layout .content-overlay h1,
+  .banner-slide .tall-layout .content-side h1 {
+    font-size: 28px;
   }
 
-  .banner-slide .col02 p {
-    font-size: 14px;
+  .banner-slide .wide-layout .content-overlay p,
+  .banner-slide .tall-layout .content-side p {
+    font-size: 16px;
   }
 }
 
 @media (max-width: 768px) {
   .home-banner {
     width: 95%;
-    margin: 0 auto;
   }
 
   .banner-slider {
-    height: 300px;
+    height: 350px;
   }
 
-  .banner-slide .two-cols {
-    flex-direction: column;
+  .banner-slide .wide-layout .content-overlay {
+    width: 70%;
   }
 
-  .banner-slide .col01,
-  .banner-slide .col02 {
-    width: 100%;
+  .banner-slide .tall-layout .content-side {
+    width: 70%;
   }
 
-  .banner-slide .col01 {
-    height: 60%;
-  }
-
-  .banner-slide .col02 {
-    height: 40%;
-    padding: 20px;
-    border-radius: 0 0 20px 20px;
-  }
-
-  .banner-slide .col01 .img {
-    border-radius: 20px 20px 0 0;
-  }
-
-  .banner-nav {
-    width: 35px;
-    height: 35px;
-  }
-
-  .banner-nav i {
-    font-size: 16px;
+  .banner-slide .tall-layout .image-side {
+    width: 30%;
   }
 }
 
 @media (max-width: 480px) {
   .banner-slider {
-    height: 250px;
+    height: 300px;
   }
 
-  .banner-slide .col02 h1 {
-    font-size: 20px;
+  .banner-slide .wide-layout .content-overlay h1,
+  .banner-slide .tall-layout .content-side h1 {
+    font-size: 24px;
     margin-bottom: 10px;
   }
 
-  .banner-slide .col02 p {
-    font-size: 13px;
+  .banner-slide .wide-layout .content-overlay p,
+  .banner-slide .tall-layout .content-side p {
+    font-size: 14px;
   }
 
-  .banner-nav {
-    width: 30px;
-    height: 30px;
-  }
-}
-
-/* 新增更小螢幕的優化 */
-@media all and (max-width: 390px) {
-  header .header-div .outer-div {
-    padding: 0 10px;
+  .banner-slide .tall-layout {
+    flex-direction: column;
   }
 
-  header .header-div .outer-div .brand {
-    height: 40px;
-  }
-
-  header .header-div .outer-div .brand a img:nth-child(1) {
-    height: 30px;
-  }
-
-  header .header-div .outer-div .brand a img:nth-child(2) {
-    height: 18px;
-  }
-
-  header .header-div .outer-div .links .search-container input {
-    height: 32px;
-    font-size: 13px;
-  }
-
-  .user-icon {
-    width: 32px;
-    height: 32px;
-  }
-}
-
-@media all and (max-width: 1100px) {
-  .section-home-search-news .block-01 .two-cols {
-    display: block;
-  }
-
-  .section-home-search-news .block-01 .two-cols .col01 {
-    text-align: center;
+  .banner-slide .tall-layout .content-side {
     width: 100%;
+    height: 60%;
+    border-radius: 20px 20px 0 0;
   }
 
-  .section-home-search-news .block-01 .two-cols .col01 img {
-    margin: 0 auto;
-  }
-
-  .section-home-search-news .block-01 .two-cols .col02 {
-    text-align: center;
+  .banner-slide .tall-layout .image-side {
     width: 100%;
-    margin-top: 30px;
-  }
-
-  .section-home-search-news .block-01 .two-cols .col02 .links {
-    display: inline-block;
-    margin: 0 auto;
-  }
-
-  .section-home-search-news .block-01 .two-cols .col02 .item:nth-child(1):after {
-    left: calc(50% - 60px);
-  }
-
-  .section-home-search-news .block-01 .two-cols .col02 .item .info h3 {
-    text-align: center;
-    font-size: 28px;
-  }
-
-  .section-home-search-news .block-01 .two-cols .col02 .item .info p {
-    text-align: center;
+    height: 40%;
+    border-radius: 0 0 20px 20px;
   }
 }
 
-@media all and (max-width: 640px) {
-  .section-home-banner .outer-div .owl-home-banner .item .two-cols .col01 .img {
-    border-radius: 15px;
-  }
+.banner-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  z-index: 2;
+}
 
-  .section-home-search-news {
-    background-size: 350vw auto;
-  }
+.banner-dot {
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
 
-  .section-home-search-news .block-01 .two-cols .col01 img {
-    width: 80%;
-  }
+.banner-dot.active {
+  background: #fff;
+  transform: scale(1.2);
+}
 
-  .section-home-search-news .block-01 .two-cols .col02 .item .info h3 {
-    font-size: 24px;
-  }
+.banner-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background: rgba(21, 47, 43, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
 
-  .section-home-search-news .block-01 .two-cols .col02 .item .info p {
-    font-size: 16px;
-  }
+.banner-nav:hover {
+  background: rgba(21, 47, 43, 0.9);
+}
+
+.banner-prev {
+  left: 20px;
+}
+
+.banner-next {
+  right: 20px;
+}
+
+.banner-nav i {
+  color: #fff;
+  font-size: 20px;
 }
 
 /* 管理頁面樣式 */
@@ -3031,6 +3138,25 @@ header .header-div .outer-div .links .search-container .search-button i {
   font-weight: 600;
 }
 
+.markdown-body ul {
+  list-style-type: disc;
+}
+
+.markdown-body ol {
+  list-style-type: decimal;
+}
+
+.markdown-body ul ul,
+.markdown-body ul ol,
+.markdown-body ol ul,
+.markdown-body ol ol {
+  margin: 0.5em 0;
+}
+
+.markdown-body li {
+  margin: 0.5em 0;
+  color: #152F2B;
+}
 
 /* 響應式調整 */
 @media all and (max-width: 768px) {

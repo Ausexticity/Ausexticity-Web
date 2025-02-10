@@ -111,9 +111,26 @@ function scheduleArticleUpdate() {
     }, CACHE_DURATION);
 }
 
-// 類別定義：用於限制標題長度
-function truncateTitle(title, maxLength = 20) {
-    return title.length > maxLength ? title.substring(0, maxLength) + '...' : title;
+// 移除 Markdown 語法
+function removeMarkdown(text) {
+    if (!text) return '';
+    return text
+        .replace(/\*\*(.*?)\*\*/g, '$1') // 移除粗體 **text**
+        .replace(/\*(.*?)\*/g, '$1')     // 移除斜體 *text*
+        .replace(/\[(.*?)\]\(.*?\)/g, '$1') // 移除連結 [text](url)
+        .replace(/#{1,6}\s/g, '')        // 移除標題 # text
+        .replace(/`{1,3}.*?`{1,3}/g, '') // 移除程式碼區塊 ```code``` 或 `code`
+        .replace(/^\s*[-*+]\s/gm, '')    // 移除清單符號
+        .replace(/^\s*\d+\.\s/gm, '')    // 移除數字清單
+        .replace(/\n/g, ' ')             // 將換行符替換為空格
+        .replace(/\s+/g, ' ')            // 將多個空格替換為單個空格
+        .trim();
+}
+
+// 類別定義：用於限制標題長度，並移除 Markdown 語法
+function truncateTitle(text, maxLength = 20) {
+    const cleanText = removeMarkdown(text);
+    return cleanText.length > maxLength ? cleanText.substring(0, maxLength) + '...' : cleanText;
 }
 
 // 初始化
@@ -315,4 +332,4 @@ export async function compressImage(file, options = {}) {
     });
 }
 
-export { updateHeader, fetchArticles, formatPublishedDate, truncateTitle };
+export { updateHeader, fetchArticles, formatPublishedDate, truncateTitle, removeMarkdown };
