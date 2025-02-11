@@ -9,8 +9,6 @@ import datetime
 import os
 from dotenv import load_dotenv
 from google.cloud import bigquery, translate_v2 as translate
-from vertexai.language_models import TextEmbeddingModel
-import anthropic
 from ai_module import (
     load_query_embedding_async,
     retrieve_similar_documents_async,
@@ -66,13 +64,7 @@ try:
 except Exception as e:
     print(f"無法載入環境變數: {e}")
     
-ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
-
-# 初始化 Anthropic client
-claude_client = anthropic.Anthropic(
-    api_key=ANTHROPIC_API_KEY,
-)
-MODEL = "claude-3-5-sonnet-20241022"
+MODEL = "openai/chatgpt-4o-latest"  # 這裡可以根據需求切換模型
 
 # 定義驗證依賴項
 security = HTTPBearer()
@@ -187,79 +179,69 @@ def get_articles(user_id: Optional[str] = None):
 class ChatRequest(BaseModel):
     query: str
     context: list  # 新增 context 欄位
+    model: str = MODEL  # 讓請求帶入要使用的模型
+    web_search: bool = False  # 是否啟用網路搜尋功能
+    rag: bool = False       # 是否啟用 RAG 資料庫查詢
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest, user: dict = Depends(verify_token)):
     user_query = request.query
-    user_context = request.context  # 獲取上下文資料
-    
-    
-    # 1. 判斷問題是否與性相關
-    sex_related = is_sex_related(user_query, claude_client, MODEL)
-    # sex_related = True
-    
-    if sex_related:
-        logger.info("問題與性相關，執行向量檢索。")
-        
-        
+    user_context = request.context
+    selected_model = request.model
+    use_web_search = request.web_search
+    use_rag = request.rag
 
-        # 同時執行翻譯與加載查詢嵌入
-        translated_query_task = asyncio.create_task(translate_text_async(user_query))
-        query_embedding_cn_task = asyncio.create_task(load_query_embedding_async(user_query))
-
-        # 等待翻譯完成，以獲取英文查詢
-        translated_query = await translated_query_task
-
-        # 使用翻譯後的英文查詢啟動英文嵌入的非同步任務
-        query_embedding_en_task = asyncio.create_task(load_query_embedding_async(translated_query))
-
-        # 同時等待中文和英文的嵌入完成
-        query_embedding_cn, query_embedding_en = await asyncio.gather(
-            query_embedding_cn_task,
-            query_embedding_en_task
-        )
-
-        logger.info(f"翻譯後的英文查詢：{translated_query}")
-        logger.info("="*50)
-
-        # 定義檢索參數
-        dataset_id = "Eros_AI_RAG"
-        table_id = "combined_embeddings"
-        project_id = "eros-ai-446307"
-
-        # 同時發起中文與英文的檢索請求（非同步）
-        similar_docs_cn_task = retrieve_similar_documents_async(
-            query_embedding_cn, dataset_id, table_id, project_id, top_n=2
-        )
-        similar_docs_en_task = retrieve_similar_documents_async(
-            query_embedding_en, dataset_id, table_id, project_id, top_n=3
-        )
-
-        similar_docs_cn, similar_docs_en = await asyncio.gather(
-            similar_docs_cn_task, similar_docs_en_task
-        )
-        
-        logger.info(f"已找到相似文獻")
-        # logger.info(f"中文相似文獻：{similar_docs_cn}")
-        # logger.info(f"英文相似文獻：{similar_docs_en}") 
-        logger.info("="*50)
-
-        # 生成回答，整合中英文文獻與額外上下文
-        answer = generate_response(
-            similar_docs_cn,
-            similar_docs_en,
-            user_query,            # 使用合併後的查詢
-            user_context,        # 傳遞額外的上下文資訊
-            claude_client,
-            MODEL
-        )
-
-        logger.info(f"生成的回答：{answer}")
-        logger.info("="*50)
+    # 若啟用網路搜尋，則忽略 RAG 參數，直接生成回答並啟用 web plugin
+    if use_web_search:
+        logger.info("啟用網路搜尋功能，不受 RAG 參數影響。")
+        answer = generate_direct_response(user_query, user_context, selected_model, web_search=True)
     else:
-        logger.info("問題非性相關，直接生成回答。")
-        answer = generate_direct_response(user_query, user_context, claude_client, MODEL)
+        if use_rag:
+            # 啟用 RAG 時，先判斷問題是否與性相關
+            sex_related = is_sex_related(user_query, selected_model)
+            if sex_related:
+                logger.info("問題與性相關，執行 RAG 資料庫檢索。")
+                # 同時執行翻譯與查詢嵌入
+                translated_query_task = asyncio.create_task(translate_text_async(user_query))
+                query_embedding_cn_task = asyncio.create_task(load_query_embedding_async(user_query))
+                # 等待翻譯完畢以取得英文查詢
+                translated_query = await translated_query_task
+                query_embedding_en_task = asyncio.create_task(load_query_embedding_async(translated_query))
+                query_embedding_cn, query_embedding_en = await asyncio.gather(query_embedding_cn_task, query_embedding_en_task)
 
+                logger.info(f"翻譯後的英文查詢：{translated_query}")
+
+                # 定義檢索參數
+                dataset_id = "Eros_AI_RAG"
+                table_id = "combined_embeddings"
+                project_id = "eros-ai-446307"
+
+                # 同時發起中文與英文的檢索請求（非同步）
+                similar_docs_cn_task = retrieve_similar_documents_async(
+                    query_embedding_cn, dataset_id, table_id, project_id, top_n=2
+                )
+                similar_docs_en_task = retrieve_similar_documents_async(
+                    query_embedding_en, dataset_id, table_id, project_id, top_n=3
+                )
+                similar_docs_cn, similar_docs_en = await asyncio.gather(similar_docs_cn_task, similar_docs_en_task)
+
+                # 利用檢索到的文獻生成回答（在此情境中不啟用網路搜尋）
+                answer = generate_response(
+                    similar_docs_cn,
+                    similar_docs_en,
+                    user_query,
+                    user_context,
+                    selected_model,
+                    web_search=False
+                )
+            else:
+                logger.info("問題非性相關，直接生成回答。")
+                answer = generate_direct_response(user_query, user_context, selected_model)
+        else:
+            logger.info("未啟用 RAG，直接生成回答。")
+            answer = generate_direct_response(user_query, user_context, selected_model)
+
+    logger.info(f"生成的回答：{answer}")
     return {"response": answer}
 
 # 新增聊天記錄模型
