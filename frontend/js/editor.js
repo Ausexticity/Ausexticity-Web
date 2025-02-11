@@ -55,7 +55,6 @@ export async function fetchArticleDetails(id) {
 
 // 填充表單資料
 export function populateForm(article) {
-    console.log(article);
     document.getElementById('title').value = article.title;
     document.getElementById('content').value = article.content;
 

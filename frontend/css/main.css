@@ -219,7 +219,7 @@ header .header-div .outer-div .links .search-container .search-button i {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 100% !important;
     height: 80px;
     background-color: #F1E3CB;
     z-index: 1000;
@@ -472,6 +472,12 @@ main {
     font-size: 14px;
     max-width: 90%;
     margin: 0 auto;
+  }
+}
+
+@media all and (max-width: 375px) {
+  header .header-div .outer-div .links .search-container {
+    width: 30px !important;
   }
 }
 
@@ -1012,6 +1018,20 @@ main {
 
   .body-brown header .header-div .outer-div .brand a img:nth-child(2) {
     height: 20px;
+  }
+}
+
+@media all and (max-width: 375px) {
+  .body-brown header .header-div .outer-div .brand {
+    height: 35px;
+  }
+
+  .body-brown header .header-div .outer-div .brand a img:nth-child(1) {
+    height: 35px;
+  }
+
+  .body-brown header .header-div .outer-div .brand a img:nth-child(2) {
+    height: 18px;
   }
 }
 
@@ -1792,10 +1812,16 @@ main {
 }
 
 .section-post .block-post .outer-div .box-div .form-div .item .controller .upload-list .sub-item .box .img img {
-  max-width: 100%;
+  max-width: 250px;
   height: auto;
   display: block;
   object-fit: cover;
+}
+
+@media all and (max-width: 480px) {
+  .section-post .block-post .outer-div .box-div .form-div .item .controller .upload-list .sub-item .box .img img {
+    max-width: 100%;
+  }
 }
 
 .section-post .block-post .outer-div .box-div .form-div .item .controller .upload-list .sub-item .box .btn-close {
@@ -1848,7 +1874,7 @@ main {
   }
 
   .section-post .block-post .outer-div .box-div .form-div .item .controller .upload-list .sub-item .box .img {
-    max-width: 200px;
+    max-width: 250px;
   }
 
   .section-post .block-post .outer-div .box-div .form-div .item .controller .upload-list .sub-item .box .btn-close {

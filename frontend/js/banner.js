@@ -81,10 +81,11 @@ function initializeBanner(articles) {
     const createSlides = async () => {
         // 判斷是否為手機畫面（螢幕寬度小於或等於 576px）
         const isMobile = window.matchMedia("(max-width: 576px)").matches;
+        const isMobile375 = window.matchMedia("(max-width: 375px)").matches;
         // 根據畫面尺寸設定截取長度，手機版比桌機截取更短
-        const titleLimit = isMobile ? 15 : 20;
-        const contentLimitWide = isMobile ? 70 : 100;
-        const contentLimitTall = isMobile ? 90 : 150;
+        const titleLimit = isMobile375 ? 10 : isMobile ? 15 : 20;
+        const contentLimitWide = isMobile375 ? 50 : isMobile ? 70 : 100;
+        const contentLimitTall = isMobile375 ? 70 : isMobile ? 90 : 150;
 
         for (let [index, article] of newsArticles.entries()) {
             const slide = document.createElement('div');
