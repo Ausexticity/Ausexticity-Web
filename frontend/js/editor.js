@@ -3,6 +3,7 @@ import { isLoggedIn, getCurrentUserId } from './auth.js';
 import { uploadImage, deleteImage, compressImage } from './misc.js';
 import { formatPublishedDate, fetchArticles } from './misc.js';
 import { readURL, getSelectedTags, addTag } from './post.js';
+import { showLoading, hideLoading } from './loading.js';
 
 // 獲取 URL 中的 id 參數以判斷是否為編輯模式
 const urlParams = new URLSearchParams(window.location.search);
@@ -41,16 +42,20 @@ export async function fetchArticleDetails(id) {
         return;
     }
 
-    const articles = await fetchArticles(true);
+    showLoading();
+    try {
+        const articles = await fetchArticles(true);
+        const userArticles = articles.filter(article => article.id === id && article.user_id === getCurrentUserId());
 
-    const userArticles = articles.filter(article => article.id === id && article.user_id === getCurrentUserId());
-
-    if (userArticles.length === 0) {
-        alert('找不到指定的文章。');
-        window.location.href = 'search.html?user_id=' + getCurrentUserId() + '&edit=true';
-        return;
+        if (userArticles.length === 0) {
+            alert('找不到指定的文章。');
+            window.location.href = 'search.html?user_id=' + getCurrentUserId() + '&edit=true';
+            return;
+        }
+        populateForm(userArticles[0]);
+    } finally {
+        hideLoading();
     }
-    populateForm(userArticles[0]);
 }
 
 // 填充表單資料
@@ -94,41 +99,43 @@ export async function submitArticle() {
         return;
     }
 
-    const title = document.getElementById('title').value.trim();
-    const content = document.getElementById('content').value.trim();
-    const tags = getSelectedTags();
-    const category = document.getElementById('category').value;
-    const imageInput = document.getElementById('image-upload');
-    const imageUrlInput = document.getElementById('image-url');
-    let imageUrl = '';
-
-    // 檢查是否有圖片網址
-    if (imageUrlInput.value.trim()) {
-        imageUrl = imageUrlInput.value.trim();
-    }
-    // 若沒有圖片網址但有選取圖片，則進行壓縮後上傳
-    else if (imageInput.files && imageInput.files[0]) {
-        const compressedFile = await compressImage(imageInput.files[0]);
-        imageUrl = await uploadImage(compressedFile);
-    }
-
-    const userId = getCurrentUserId(); // 獲取當前用戶ID
-
-    if (!title || !content) {
-        alert('請填寫所有必填欄位');
-        return;
-    }
-
-    const article = {
-        title,
-        content,
-        tags,
-        image_url: imageUrl,
-        user_id: userId,
-        category
-    };
-
+    showLoading();
     try {
+        const title = document.getElementById('title').value.trim();
+        const content = document.getElementById('content').value.trim();
+        const tags = getSelectedTags();
+        const category = document.getElementById('category').value;
+        const imageInput = document.getElementById('image-upload');
+        const imageUrlInput = document.getElementById('image-url');
+        let imageUrl = '';
+
+        // 檢查是否有圖片網址
+        if (imageUrlInput.value.trim()) {
+            imageUrl = imageUrlInput.value.trim();
+        }
+        // 若沒有圖片網址但有選取圖片，則進行壓縮後上傳
+        else if (imageInput.files && imageInput.files[0]) {
+            const compressedFile = await compressImage(imageInput.files[0]);
+            imageUrl = await uploadImage(compressedFile);
+        }
+
+        const userId = getCurrentUserId(); // 獲取當前用戶ID
+
+        if (!title || !content) {
+            alert('請填寫所有必填欄位');
+            hideLoading();
+            return;
+        }
+
+        const article = {
+            title,
+            content,
+            tags,
+            image_url: imageUrl,
+            user_id: userId,
+            category
+        };
+
         const response = await fetch(`${API_BASE_URL}/api/articles`, {
             method: 'POST',
             headers: {
@@ -147,10 +154,12 @@ export async function submitArticle() {
         } else {
             const data = await response.json();
             alert(`發布失敗: ${data.detail}`);
+            hideLoading();
         }
     } catch (error) {
         console.error('錯誤:', error);
         alert('發布文章時發生錯誤');
+        hideLoading();
     }
 }
 
@@ -162,47 +171,49 @@ export async function updateArticle() {
         return;
     }
 
-    const title = document.getElementById('title').value.trim();
-    const content = document.getElementById('content').value.trim();
-    const tags = getSelectedTags();
-    const category = document.getElementById('category').value;
-    const imageInput = document.getElementById('image-upload');
-    const imageUrlInput = document.getElementById('image-url');
-    let imageUrl = originalImageUrl; // 預設使用原始圖片網址
+    showLoading();
+    try {
+        const title = document.getElementById('title').value.trim();
+        const content = document.getElementById('content').value.trim();
+        const tags = getSelectedTags();
+        const category = document.getElementById('category').value;
+        const imageInput = document.getElementById('image-upload');
+        const imageUrlInput = document.getElementById('image-url');
+        let imageUrl = originalImageUrl; // 預設使用原始圖片網址
 
-    // 檢查是否有新的圖片網址，如果有則使用新的圖片網址
-    if (imageUrlInput.value.trim()) {
-        imageUrl = imageUrlInput.value.trim();
-    }
-    // 若沒有新的圖片網址但有選取新圖片，則進行壓縮後上傳
-    else if (imageInput.files && imageInput.files[0]) {
-        const compressedFile = await compressImage(imageInput.files[0]);
-        const uploadedImageUrl = await uploadImage(compressedFile);
-        if (uploadedImageUrl) {
-            imageUrl = uploadedImageUrl;
-        } else {
-            alert('圖片上傳失敗，請稍後再試。');
+        // 檢查是否有新的圖片網址，如果有則使用新的圖片網址
+        if (imageUrlInput.value.trim()) {
+            imageUrl = imageUrlInput.value.trim();
+        }
+        // 若沒有新的圖片網址但有選取新圖片，則進行壓縮後上傳
+        else if (imageInput.files && imageInput.files[0]) {
+            const compressedFile = await compressImage(imageInput.files[0]);
+            const uploadedImageUrl = await uploadImage(compressedFile);
+            if (uploadedImageUrl) {
+                imageUrl = uploadedImageUrl;
+            } else {
+                alert('圖片上傳失敗，請稍後再試。');
+                return;
+            }
+        }
+
+        const userId = getCurrentUserId(); // 獲取當前用戶ID
+
+        if (!title || !content) {
+            alert('請填寫所有必填欄位');
+            hideLoading();
             return;
         }
-    }
 
-    const userId = getCurrentUserId(); // 獲取當前用戶ID
+        const article = {
+            title,
+            content,
+            tags,
+            image_url: imageUrl,
+            user_id: userId,
+            category
+        };
 
-    if (!title || !content) {
-        alert('請填寫所有必填欄位');
-        return;
-    }
-
-    const article = {
-        title,
-        content,
-        tags,
-        image_url: imageUrl,
-        user_id: userId,
-        category
-    };
-
-    try {
         const response = await fetch(`${API_BASE_URL}/api/articles/${articleId}`, {
             method: 'PUT',
             headers: {
@@ -223,9 +234,11 @@ export async function updateArticle() {
         } else {
             const data = await response.json();
             alert(`更新失敗: ${data.detail}`);
+            hideLoading();
         }
     } catch (error) {
         console.error('錯誤:', error);
         alert('更新文章時發生錯誤');
+        hideLoading();
     }
 }

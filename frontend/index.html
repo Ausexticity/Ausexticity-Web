@@ -16,12 +16,10 @@
     <link rel="stylesheet" href="css/vendor/owl.carousel.css?ver=2023100726">
     <link rel="stylesheet" href="css/main.css?ver=2023102401">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous">
-    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
     <link rel="stylesheet" href="css/chat.css">
 </head>
 
 <body class="body-home">
-    <dotlottie-player src="animation/loading.lottie" background="white" speed="1" loop autoplay></dotlottie-player>
     <header>
         <div class="header-div">
             <div class="outer-div">
@@ -117,10 +115,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <script src="js/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.4.0/color-thief.min.js"></script>
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/misc.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <script type="module" src="js/banner.js"></script>
     <script type="module" src="js/nav-search.js"></script>
     <script type="module" src="js/auth.js"></script>
@@ -131,9 +127,11 @@
         import { truncateTitle } from './js/misc.js';
         import { initializeBanner } from './js/banner.js';
         import { isLoggedIn } from './js/auth.js';
-
+        import { initializeLoading, showLoading, hideLoading } from './js/loading.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
+            await initializeLoading();
+            showLoading();
             const chatContainer = document.getElementById('chatContainer');
 
             // 檢查使用者是否已登入
@@ -255,14 +253,12 @@
                         doctorList.appendChild(articleElement);
                     });
 
-                    // 所有內容載入完成後，隱藏 loading 動畫
-                    document.querySelector('dotlottie-player').style.display = 'none';
+                    hideLoading();
 
                 }
             } catch (error) {
                 console.error('獲取文章資料失敗:', error);
-                // 發生錯誤時也要隱藏 loading 動畫
-                document.querySelector('dotlottie-player').style.display = 'none';
+                hideLoading();
             }
         });
     </script>

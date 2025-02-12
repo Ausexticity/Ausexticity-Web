@@ -11,10 +11,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
     <link rel="manifest" href="images/favicon/site.webmanifest">
     <link rel="shortcut icon" href="images/favicon/favicon.ico">
-    <meta name="theme-color" content="#ffffff">
-    <link rel="stylesheet" href="css/vendor/aos.css?ver=2023102401">
-    <link rel="stylesheet" href="css/vendor/owl.carousel.css?ver=2023100726">
-    <link rel="stylesheet" href="css/main.css?ver=2023102401">
+    <link rel="stylesheet" href="css/main.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
@@ -69,8 +66,8 @@
 
     <div class="overlay"></div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <script src="js/jquery.min.js"></script>
-    <script src="js/owl.carousel.js"></script>
 
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/misc.js"></script>
@@ -79,17 +76,25 @@
     <script type="module">
         import { login } from './js/auth.js';
         import { updateHeader } from './js/misc.js';
+        import { initializeLoading, showLoading, hideLoading } from './js/loading.js';
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeLoading();
+
             const loginBtn = document.getElementById('login-btn');
             if (loginBtn) {
                 loginBtn.addEventListener('click', () => {
+                    showLoading();
+
                     const username = document.getElementById('username').value.trim();
                     const password = document.getElementById('password').value;
 
                     login(username, password).then(() => {
                         updateHeader();
                         window.location.href = 'index.html';
+                    }).catch(error => {
+                        console.error('登入失敗:', error);
+                        hideLoading();
                     });
                 });
             }

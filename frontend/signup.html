@@ -83,23 +83,30 @@
     <script type="module">
         import { signup } from './js/auth.js';
         import { updateHeader } from './js/misc.js';
+        import { initializeLoading, showLoading, hideLoading } from './js/loading.js';
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeLoading();
             const signUpBtn = document.getElementById('sign-up-btn');
             if (signUpBtn) {
                 signUpBtn.addEventListener('click', () => {
+                    showLoading();
                     const username = document.getElementById('username').value.trim();
                     const password = document.getElementById('password').value;
                     const passwordConfirm = document.getElementById('password_confirm').value;
 
                     if (password !== passwordConfirm) {
                         alert('密碼與確認密碼不一致！');
+                        hideLoading();
                         return;
                     }
 
                     signup(username, password).then(() => {
                         updateHeader();
                         window.location.href = 'index.html';
+                    }).catch(error => {
+                        console.error('註冊失敗:', error);
+                        hideLoading();
                     });
                 });
             }

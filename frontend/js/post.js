@@ -1,5 +1,6 @@
 import { updateHeader, fetchArticles } from './misc.js';
 import { API_BASE_URL } from './config.js';
+import { initializeLoading, showLoading, hideLoading } from './loading.js';
 
 var windWidth = $(window).width();//抓螢幕的寬度
 
@@ -15,12 +16,14 @@ export function getSelectedTags() {
 export function readURL(input, id) {
 	if (input.files && input.files[0]) {
 		console.log('讀取圖片: ', input.files[0]);
+		showLoading();
 		var reader = new FileReader();
 
 		reader.onload = function (e) {
 			$(id).attr('src', e.target.result);
 			$(id).parent().css('display', 'block'); // 顯示圖片預覽
 			$('#image-upload').css('display', 'block'); // 確保上傳按鈕可見
+			hideLoading();
 		};
 		reader.readAsDataURL(input.files[0]);
 	}
@@ -59,13 +62,10 @@ export function setScroll() {
 // 初始化標籤功能
 async function initializeTags() {
 	try {
-
 		const articles = await fetchArticles();
 
 		// 收集所有已使用的標籤
 		articles.forEach(article => {
-			// 如果文章有標籤，將標籤添加到 allTags 集合中 如果文章沒有標籤，則跳過
-
 			if (article.tags && Array.isArray(article.tags)) {
 				article.tags.forEach(tag => allTags.add(tag));
 			}
@@ -98,9 +98,9 @@ async function initializeTags() {
 		if (imageUrlInput) {
 			// 移除原有的套用按鈕
 			document.getElementById('apply-url')?.remove();
-			
+
 			// 添加 input 事件監聽器，實現即時預覽
-			imageUrlInput.addEventListener('input', debounce(function(e) {
+			imageUrlInput.addEventListener('input', debounce(function (e) {
 				const url = e.target.value.trim();
 				if (url) {
 					applyImageUrl(url);
@@ -189,10 +189,15 @@ export function updatePopularTags() {
 // 處理圖片網址
 export function applyImageUrl(url) {
 	if (url) {
-		$('#uploadImage').attr('src', url);
-		$('#uploadImage').parent().css('display', 'block'); // 顯示圖片預覽
-		$('#image-upload').css('display', 'block'); // 確保上傳按鈕可見
-		$('#image-url').val(url); // 更新輸入框的值
+		$('#uploadImage').attr('src', url)
+			.on('load', function () {
+				$(this).parent().css('display', 'block');
+				$('#image-upload').css('display', 'block');
+				$('#image-url').val(url);
+			})
+			.on('error', function () {
+				alert('圖片載入失敗，請檢查網址是否正確');
+			});
 	}
 }
 
@@ -218,9 +223,10 @@ window.handleTagKeydown = handleTagKeydown;
 window.applyImageUrl = applyImageUrl;
 
 // 在文檔加載完成後初始化
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+	await initializeLoading();
 	updateHeader();
-	initializeTags();
+	await initializeTags();
 
 	// 綁定刪除圖片按鈕的點擊事件
 	$('#remove-image').click(function () {
