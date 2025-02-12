@@ -608,22 +608,40 @@ main {
   background-size: 100% auto;
   background-repeat: no-repeat;
   margin-top: 80px;
+
 }
 
 .section-home-search-news .block-01 .outer-div {
-  max-width: 1024px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 0 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+
 .section-home-search-news .block-01 .two-cols {
+  width: 80%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
 }
 
+@media (max-width: 1024px) {
+  .section-home-search-news .block-01 .two-cols {
+    width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .section-home-search-news .block-01 .two-cols {
+    width: 95%;
+  }
+}
+
 .section-home-search-news .block-01 .two-cols .col01 {
-  width: 675px;
+  width: 300px;
+  padding-right: 40px;
 }
 
 .section-home-search-news .block-01 .two-cols .col01 img {
@@ -631,7 +649,23 @@ main {
 }
 
 .section-home-search-news .block-01 .two-cols .col02 {
-  width: calc(100% - 675px);
+  width: calc(100% - 300px);
+}
+
+@media (max-width: 768px) {
+  .section-home-search-news .block-01 .two-cols .col02 {
+    width: 100%;
+  }
+
+  .section-home-search-news .block-01 .two-cols .col01 {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .section-home-search-news .block-01 .outer-div {
+    padding: 0 10px;
+  }
 }
 
 .section-home-search-news .block-01 .two-cols .col02 .item {
@@ -645,7 +679,6 @@ main {
 
 .section-home-search-news .block-01 .two-cols .col02 .item:nth-child(1) {
   padding-bottom: 50px;
-  margin-bottom: 50px;
 }
 
 .section-home-search-news .block-01 .two-cols .col02 .item:nth-child(1) .action {
@@ -673,14 +706,14 @@ main {
   bottom: -45px;
 }
 
-.section-home-search-news .block-01 .two-cols .col02 .item:nth-child(1):after {
+.section-home-search-news .block-01 .two-cols:after {
   content: "";
   position: absolute;
   left: 0;
   bottom: 0;
   width: 120px;
   height: 2px;
-  background-color: #152F2B;
+  /* background-color: #152F2B; */
 }
 
 .section-home-search-news .block-01 .two-cols .col02 .item:nth-child(2) .action {
