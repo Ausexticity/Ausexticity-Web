@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile
+from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 import firebase_admin
@@ -13,9 +13,9 @@ from ai_module import (
     load_query_embedding_async,
     retrieve_similar_documents_async,
     translate_text_async,
-    generate_response,
     is_sex_related,
-    generate_direct_response
+    generate_response_stream,
+    generate_direct_response_stream
 )
 import logging
 import asyncio
@@ -23,6 +23,8 @@ from typing import Tuple, Optional, Union
 from google.api_core.exceptions import NotFound  # 若有需要，可引入對應的例外
 import urllib.parse
 from urllib.parse import urlparse
+from sse_starlette.sse import EventSourceResponse   # 引入 SSE 回應類別
+import json
 
 app = FastAPI()
 logger = logging.getLogger('uvicorn.error')
@@ -31,6 +33,9 @@ logger = logging.getLogger('uvicorn.error')
 # 設定 CORS 允許的來源
 origins = [
     "http://127.0.0.1:5500",  # 前端開發伺服器
+    "http://127.0.0.1:5173",  # 前端開發伺服器
+    "http://localhost:5173",   # 新增：本地開發伺服器
+    "http://localhost:5500",   # 新增：本地開發伺服器
     "https://ausexticity-frontend.onrender.com",  # 前端生產環境
     "https://www.ausexticity.com",
     "https://ausexticity.com",
@@ -183,40 +188,87 @@ class ChatRequest(BaseModel):
     web_search: bool = False  # 是否啟用網路搜尋功能
     rag: bool = False       # 是否啟用 RAG 資料庫查詢
 
-@app.post("/api/chat")
-async def chat(request: ChatRequest, user: dict = Depends(verify_token)):
-    user_query = request.query
-    user_context = request.context
-    selected_model = request.model
-    use_web_search = request.web_search
-    use_rag = request.rag
-
-    # 若啟用網路搜尋，則忽略 RAG 參數，直接生成回答並啟用 web plugin
-    if use_web_search:
+@app.get("/api/chat")
+async def chat(
+    request: Request,
+    query: str,  # 從 query parameters 獲取查詢字串
+    user_id: str,  # 改為接收使用者 ID
+    model: str = MODEL,
+    web_search: bool = False,
+    rag: bool = False,
+    token: str = None,  # 從 query parameters 獲取 token
+):
+    """
+    修改後的聊天端點，使用 SSE 流式回傳生成的回應內容。
+    當啟用 RAG 時，後端會依序回傳當前處理狀態，包括：
+    「判斷語句...」、「翻譯查詢...」、「查詢資料庫...」等進度訊息。
+    """
+    # 驗證 token
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="未提供驗證令牌",
+        )
+    
+    try:
+        decoded_token = auth.verify_id_token(token)
+        logger.info(f"驗證成功，使用者 UID: {decoded_token['uid']}")
+    except Exception as e:
+        logger.error(f"驗證令牌失敗: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="無效的驗證令牌",
+        )
+    
+    # 檢查 token 中的 uid 是否與傳入的 user_id 相符
+    if decoded_token["uid"] != user_id:
+        logger.error(f"Token uid 與 user_id 不符: {decoded_token['uid']} != {user_id}")
+        raise HTTPException(status_code=403, detail="Token uid 與 user_id 不符")
+    
+    # 根據 user_id 從 Firestore 取得該使用者最新的 5 筆聊天記錄作為上下文
+    try:
+        chat_history_doc = db.collection('chat_histories').document(user_id).get()
+        if chat_history_doc.exists:
+            data = chat_history_doc.to_dict()
+            messages = data.get("messages", [])
+            messages_sorted = sorted(messages, key=lambda m: m["timestamp"]) if messages else []
+            user_context = messages_sorted[-5:]
+        else:
+            user_context = []
+    except Exception as e:
+        logger.error(f"取得聊天記錄失敗: {e}")
+        user_context = []
+    
+    # 根據參數選擇不同的 SSE 回傳邏輯
+    if web_search:
         logger.info("啟用網路搜尋功能，不受 RAG 參數影響。")
-        answer = generate_direct_response(user_query, user_context, selected_model, web_search=True)
-    else:
-        if use_rag:
-            # 啟用 RAG 時，先判斷問題是否與性相關
-            sex_related = is_sex_related(user_query, selected_model)
+        async def web_search_event_generator():
+            yield "data: 正在進行網路搜尋\n\n"
+            async for event in generate_direct_response_stream(query, user_context, model, web_search=True):
+                yield event
+        stream_generator = web_search_event_generator()
+    elif rag:
+        async def rag_event_generator():
+            # 回傳判斷語句狀態
+            yield "data: 正在判斷語句\n\n"
+            sex_related = is_sex_related(query, model)
             if sex_related:
-                logger.info("問題與性相關，執行 RAG 資料庫檢索。")
-                # 同時執行翻譯與查詢嵌入
-                translated_query_task = asyncio.create_task(translate_text_async(user_query))
-                query_embedding_cn_task = asyncio.create_task(load_query_embedding_async(user_query))
-                # 等待翻譯完畢以取得英文查詢
-                translated_query = await translated_query_task
+                yield "data: 正在翻譯查詢\n\n"
+                # 執行查詢翻譯
+                translated_query = await translate_text_async(query)
+                yield f"data: 查詢翻譯完成：{translated_query}\n\n"
+                yield "data: 正在生成查詢嵌入\n\n"
+                # 同時產生中文與英文查詢嵌入（非同步）
+                query_embedding_cn_task = asyncio.create_task(load_query_embedding_async(query))
                 query_embedding_en_task = asyncio.create_task(load_query_embedding_async(translated_query))
                 query_embedding_cn, query_embedding_en = await asyncio.gather(query_embedding_cn_task, query_embedding_en_task)
-
-                logger.info(f"翻譯後的英文查詢：{translated_query}")
-
-                # 定義檢索參數
+                
+                # 設定 RAG 檢索參數
                 dataset_id = "Eros_AI_RAG"
                 table_id = "combined_embeddings"
                 project_id = "eros-ai-446307"
-
-                # 同時發起中文與英文的檢索請求（非同步）
+                
+                yield "data: 正在查詢資料庫\n\n"
                 similar_docs_cn_task = retrieve_similar_documents_async(
                     query_embedding_cn, dataset_id, table_id, project_id, top_n=2
                 )
@@ -224,25 +276,43 @@ async def chat(request: ChatRequest, user: dict = Depends(verify_token)):
                     query_embedding_en, dataset_id, table_id, project_id, top_n=3
                 )
                 similar_docs_cn, similar_docs_en = await asyncio.gather(similar_docs_cn_task, similar_docs_en_task)
-
-                # 利用檢索到的文獻生成回答（在此情境中不啟用網路搜尋）
-                answer = generate_response(
+                yield "data: 資料庫查詢完成，開始生成回答\n\n"
+                # 將資料庫結果交由 generate_response_stream 產生最終回答
+                async for event in generate_response_stream(
                     similar_docs_cn,
                     similar_docs_en,
-                    user_query,
+                    query,
                     user_context,
-                    selected_model,
+                    model,
                     web_search=False
-                )
+                ):
+                    yield event
             else:
-                logger.info("問題非性相關，直接生成回答。")
-                answer = generate_direct_response(user_query, user_context, selected_model)
-        else:
-            logger.info("未啟用 RAG，直接生成回答。")
-            answer = generate_direct_response(user_query, user_context, selected_model)
+                yield "data: 問題非性相關，直接生成回答\n\n"
+                async for event in generate_direct_response_stream(query, user_context, model):
+                    yield event
+                    
+        stream_generator = rag_event_generator()
+    else:
+        logger.info("未啟用 RAG，直接生成回答。")
+        stream_generator = generate_direct_response_stream(query, user_context, model)
 
-    logger.info(f"生成的回答：{answer}")
-    return {"response": answer}
+    async def event_generator():
+        async for event in stream_generator:
+            if await request.is_disconnected():
+                break
+            yield event
+
+    return EventSourceResponse(
+        event_generator(),
+        headers={
+            'Access-Control-Allow-Origin': request.headers.get('origin', '*'),
+            'Access-Control-Allow-Credentials': 'true',
+            'Cache-Control': 'no-cache',
+            'Content-Type': 'text/event-stream',
+            'Connection': 'keep-alive'
+        }
+    )
 
 # 新增聊天記錄模型
 class ChatMessage(BaseModel):

@@ -12,5 +12,6 @@ google-cloud-storage
 python-dotenv
 python-multipart
 openai
+sse-starlette
 
 # 其他依賴

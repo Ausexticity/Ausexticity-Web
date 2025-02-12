@@ -184,57 +184,38 @@ async def translate_text_async(text):
         text
     )
 
-def generate_response(documents_cn, documents_en, user_query, additional_context, model, web_search: bool = False):
+
+
+# 在檔案末尾新增以下 SSE 版本的流式回應相關函式
+
+async def stream_response_async(params):
     """
-    使用檢索到的中英文文檔與用戶查詢生成回答，採用串流式方式接收內容。
-
-    Args:
-        documents_cn (list): 中文檢索到的文檔列表。
-        documents_en (list): 英文檢索到的文檔列表。
-        user_query (str): 用戶的查詢。
-        additional_context (list): 額外的上下文資訊。
-        model (str): 使用的模型。
-        web_search (bool): 是否啟用網路搜尋功能，預設為 False。
-
-    Returns:
-        str: 生成的回答（完整的文字內容）。
+    非同步地從 OpenAI API 取得串流回應，並利用 asyncio.Queue 將同步迭代包裝成非同步產生器。
     """
-    try:
-        additional_context = [
-            {'role': 'assistant' if msg['is_bot'] else 'user', 'content': msg['message']}
-            for msg in additional_context
-        ]
-        combined_context = "\n\n".join([doc["content"] for doc in documents_cn + documents_en])
-        prompt = f"""相關文章：
-{combined_context}
+    loop = asyncio.get_event_loop()
+    q = asyncio.Queue()
 
-使用生動有趣的方式介紹性知識，並且適時的使用表情符號增添趣味性🍑💦 因聊天介面已包含重要提醒: 1.需要注意衛生和安全 2.應該尊重雙方意願 3.保持開放溝通很重要，不需要在訊息中再次提醒
+    def run():
+        try:
+            # 使用 OpenAI API 產生器逐塊讀取回應
+            for chunk in client.chat.completions.create(**params):
+                # 由於 delta 現在是一個物件，因此使用屬性存取
+                delta = chunk.choices[0].delta
+                content = delta.content if hasattr(delta, "content") else ""
+                asyncio.run_coroutine_threadsafe(q.put(content), loop)
+        except Exception as e:
+            logger.error(f"流式回應錯誤: {e}")
+        finally:
+            asyncio.run_coroutine_threadsafe(q.put(None), loop)
 
-用戶問題：
-{user_query}
-"""
-        params = {
-            "extra_headers": EXTRA_HEADERS,
-            "model": model,
-            "max_tokens": 8192,
-            "temperature": 0.8,
-            "messages": additional_context + [
-                {"role": "user", "content": prompt}
-            ],
-            "stream": True  # 啟用串流模式
-        }
-        if web_search:
-            params["plugins"] = [{"id": "web"}]
-        response = client.chat.completions.create(**params)
-        full_response = ""
-        for chunk in response:
-            delta = chunk.choices[0].delta
-            full_response += delta.get("content", "")
-        return full_response
-    except Exception as e:
-        logger.error(f"生成回答時發生錯誤：{str(e)}")
-        return ""
+    executor.submit(run)
 
+    while True:
+        content = await q.get()
+        if content is None:
+            break
+        yield content
+        
 def is_sex_related(query: str, model) -> bool:
     """
     判斷問題是否與性相關，使用串流模式以取得回應後判斷。
@@ -257,54 +238,93 @@ def is_sex_related(query: str, model) -> bool:
                 {"role": "system", "content": "請判斷以下問題是否與性或性知識或身體有任何關聯。請僅回覆「是」或「否」。"},
                 {"role": "user", "content": prompt}
             ],
-            stream=True  # 串流模式
         )
-        answer = ""
-        for chunk in response:
-            delta = chunk.choices[0].delta
-            answer += delta.get("content", "")
+        answer = response.choices[0].message.content
         return answer.strip() == "是"
     except Exception as e:
         logger.error(f"判斷性相關性時出錯：{e}")
         return False 
 
-def generate_direct_response(user_query: str, additional_context: list, model: str, web_search: bool = False) -> str:
-    """
-    生成直接回答，無需檢索相關文檔，採用串流模式接收回答。
 
+async def generate_response_stream(documents_cn, documents_en, user_query, additional_context, model, web_search: bool = False):
+    """
+    使用檢索到的中英文文檔與用戶查詢生成回答，並以 SSE 流式回傳結果。
+    
     Args:
-        user_query (str): 使用者的查詢。
-        additional_context (list): 額外上下文。
+        documents_cn (list): 中文檢索到的文檔列表。
+        documents_en (list): 英文檢索到的文檔列表。
+        user_query (str): 用戶的查詢。
+        additional_context (list): 額外的上下文資訊。
         model (str): 使用的模型。
         web_search (bool): 是否啟用網路搜尋功能，預設為 False。
+    
+    Yields:
+        dict: 包含 SSE 事件的訊息。
+    """
+    additional_context = [
+        {'role': 'assistant' if msg['is_bot'] else 'user', 'content': msg['message']}
+        for msg in additional_context
+    ]
+    combined_context = "\n\n".join([doc["content"] for doc in documents_cn + documents_en])
+    prompt = f"""相關文章：
+{combined_context}
 
-    Returns:
-        str: 生成的回答。
+使用生動有趣的方式介紹性知識，並且適時的使用表情符號增添趣味性🍑💦 因聊天介面已包含重要提醒: 1.需要注意衛生和安全 2.應該尊重雙方意願 3.保持開放溝通很重要，不需要在訊息中再次提醒
+
+用戶問題：
+{user_query}
+"""
+    # 若啟用網路搜尋功能，則於模型名稱後附上 ":online"
+    if web_search:
+        if not model.endswith(":online"):
+            model = f"{model}:online"
+    params = {
+        "extra_headers": EXTRA_HEADERS,
+        "model": model,
+        "max_tokens": 8192,
+        "temperature": 0.8,
+        "messages": additional_context + [
+            {"role": "user", "content": prompt}
+        ],
+        "stream": True
+    }
+    
+    async for chunk in stream_response_async(params):
+        yield {"event": "message", "data": chunk}
+    yield {"event": "end", "data": ""}
+
+async def generate_direct_response_stream(user_query: str, additional_context: list, model: str, web_search: bool = False):
+    """
+    生成直接回答，無需檢索相關文檔，並以 SSE 流式回傳結果。
+    
+    Args:
+        user_query (str): 使用者的查詢。
+        additional_context (list): 額外上下文資訊。
+        model (str): 使用的模型。
+        web_search (bool): 是否啟用網路搜尋功能，預設為 False。
+    
+    Yields:
+        dict: 包含 SSE 事件的訊息。
     """
     additional_context = [
         {'role': 'assistant' if msg['is_bot'] else 'user', 'content': msg['message']}
         for msg in additional_context
     ]
     prompt = f"使用者問題：{user_query}\n請提供相應的回答。"
-    try:
-        params = {
-            "extra_headers": EXTRA_HEADERS,
-            "model": model,
-            "max_tokens": 8192,
-            "temperature": 0.6,
-            "messages": [{"role": "system", "content": "你是一個飽學性知識的專家，負責與用戶真誠的聊天! 過程要保持熱情、友善且具有同理心💛"}] + additional_context + [
-                {"role": "user", "content": prompt}
-            ],
-            "stream": True  # 啟用串流模式
-        }
-        if web_search:
-            params["plugins"] = [{"id": "web"}]
-        response = client.chat.completions.create(**params)
-        full_response = ""
-        for chunk in response:
-            delta = chunk.choices[0].delta
-            full_response += delta.get("content", "")
-        return full_response
-    except Exception as e:
-        logger.error(f"生成回答時出錯：{e}")
-        return "" 
+    if web_search:
+        if not model.endswith(":online"):
+            model = f"{model}:online"
+    params = {
+        "extra_headers": EXTRA_HEADERS,
+        "model": model,
+        "max_tokens": 8192,
+        "temperature": 0.6,
+        "messages": [{"role": "system", "content": "使用生動有趣的方式介紹性知識，並且適時的使用表情符號增添趣味性🍑💦 因聊天介面已包含重要提醒: 1.需要注意衛生和安全 2.應該尊重雙方意願 3.保持開放溝通很重要，不需要在訊息中再次提醒"}] + additional_context + [
+            {"role": "user", "content": prompt}
+        ],
+        "stream": True
+    }
+    
+    async for chunk in stream_response_async(params):
+        yield {"event": "message", "data": chunk}
+    yield {"event": "end", "data": ""} 
