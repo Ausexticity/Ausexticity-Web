@@ -86,11 +86,18 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             await initializeLoading();
-
-            // 檢查是否已經登入
-            if (await isLoggedIn()) {
-                window.location.href = 'index.html';
-                return;
+            showLoading();
+            try {
+                // 檢查使用者是否已登入
+                const userIsLoggedIn = await isLoggedIn();
+                if (userIsLoggedIn) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('初始化頁面時發生錯誤:', error);
+            } finally {
+                hideLoading();
             }
 
             const loginBtn = document.getElementById('login-btn');
@@ -160,8 +167,6 @@
                     }
                 });
             }
-
-            updateHeader();
         });
     </script>
 </body>

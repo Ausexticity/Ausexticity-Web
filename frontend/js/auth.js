@@ -12,7 +12,11 @@ import {
     signInWithEmailLink,
     sendEmailVerification,
     signOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    updateProfile,
+    updatePassword,
+    reauthenticateWithCredential,
+    EmailAuthProvider
 } from 'https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js';
 
 const firebaseConfig = {
@@ -93,32 +97,57 @@ async function signup(email, password) {
 async function login(email, password) {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // 檢查電子郵件是否已驗證
+        if (!user.emailVerified) {
+            // 重新發送驗證郵件
+            await sendEmailVerification(user);
+            await signOut(auth); // 登出未驗證的用戶
+            throw new Error('請先驗證您的電子郵件。已重新發送驗證郵件，請查收。');
+        }
+
         return true;
     } catch (error) {
         console.error('登入時發生錯誤:', error);
         let errorMessage = '登入時發生錯誤';
 
-        switch (error.code) {
-            case 'auth/invalid-email':
-                errorMessage = '無效的電子郵件格式';
-                break;
-            case 'auth/user-disabled':
-                errorMessage = '此帳號已被停用';
-                break;
-            case 'auth/user-not-found':
-                errorMessage = '找不到此使用者';
-                break;
-            case 'auth/wrong-password':
-                errorMessage = '密碼錯誤';
-                break;
-            case 'auth/invalid-login-credentials':
-                errorMessage = '帳號或密碼錯誤';
-                break;
+        if (error.message === '請先驗證您的電子郵件。已重新發送驗證郵件，請查收。') {
+            errorMessage = error.message;
+        } else {
+            switch (error.code) {
+                case 'auth/invalid-email':
+                    errorMessage = '無效的電子郵件格式';
+                    break;
+                case 'auth/user-disabled':
+                    errorMessage = '此帳號已被停用';
+                    break;
+                case 'auth/user-not-found':
+                    errorMessage = '找不到此使用者';
+                    break;
+                case 'auth/wrong-password':
+                    errorMessage = '密碼錯誤';
+                    break;
+                case 'auth/invalid-login-credentials':
+                    errorMessage = '帳號或密碼錯誤';
+                    break;
+            }
         }
 
         alert(errorMessage);
         return false;
     }
+}
+
+// 檢查電子郵件是否已驗證
+async function isEmailVerified() {
+    const user = auth.currentUser;
+    if (!user) {
+        return false;
+    }
+    // 重新載入用戶資料以確保狀態是最新的
+    await user.reload();
+    return user.emailVerified;
 }
 
 // 發送一次性登入連結
@@ -248,6 +277,48 @@ if (typeof window !== 'undefined') {
     handleSignInWithEmailLink().catch(console.error);
 }
 
+// 更新用戶名稱
+async function updateUsername(newUsername) {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error('用戶未登入');
+        }
+
+        await updateProfile(user, {
+            displayName: newUsername
+        });
+        return true;
+    } catch (error) {
+        console.error('更新用戶名稱時發生錯誤:', error);
+        throw error;
+    }
+}
+
+// 重設密碼
+async function resetPassword(currentPassword, newPassword) {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error('用戶未登入');
+        }
+
+        // 重新驗證用戶
+        const credential = EmailAuthProvider.credential(
+            user.email,
+            currentPassword
+        );
+        await reauthenticateWithCredential(user, credential);
+
+        // 更新密碼
+        await updatePassword(user, newPassword);
+        return true;
+    } catch (error) {
+        console.error('重設密碼時發生錯誤:', error);
+        throw error;
+    }
+}
+
 // 導出函數供其他模組使用
 export {
     signup,
@@ -258,5 +329,8 @@ export {
     isLoggedIn,
     getCurrentUserId,
     sendSignInLinkToEmail,
-    handleSignInWithEmailLink
+    handleSignInWithEmailLink,
+    isEmailVerified,
+    updateUsername,
+    resetPassword
 };

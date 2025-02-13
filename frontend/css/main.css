@@ -2209,6 +2209,8 @@ main {
   border-radius: 50%;
   /* 使圖片圓形 */
   cursor: pointer;
+  /* 填滿 */
+  object-fit: cover;
 }
 
 /* 響應式調整 */

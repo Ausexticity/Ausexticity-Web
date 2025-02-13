@@ -1,4 +1,7 @@
 import { fetchArticles, formatPublishedDate, truncateTitle } from './misc.js';
+import { API_BASE_URL } from './config.js';
+import { updateHeader } from './misc.js';
+import { initializeLoading, showLoading, hideLoading } from './loading.js';
 
 // 配置 marked.js
 marked.setOptions({
@@ -119,6 +122,18 @@ function showErrorMessage(message) {
 }
 
 // 初始化 - 等 DOM 載入完成後進行文章載入
-document.addEventListener('DOMContentLoaded', () => {
-    loadArticleDetail();
+document.addEventListener('DOMContentLoaded', async () => {
+    await initializeLoading();
+    showLoading();
+
+    try {
+        // 更新頁面頂部（包含載入用戶頭像）
+        await updateHeader();
+
+        loadArticleDetail();
+    } catch (error) {
+        console.error('初始化頁面時發生錯誤:', error);
+    } finally {
+        hideLoading();
+    }
 }); 

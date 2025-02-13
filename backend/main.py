@@ -570,3 +570,30 @@ def set_user_avatar(request: AvatarRequest, user: dict = Depends(verify_token)):
         return {"message": "使用者頭像更新成功"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"更新頭像時出錯：{str(e)}")
+
+@app.post("/api/user/create")
+def create_user(user: dict = Depends(verify_token)):
+    """
+    創造用戶文件 API
+    使用者經過驗證後，會以 user["uid"] 為文件 ID，
+    並新增 avatar 與 role 預設欄位。
+    """
+    try:
+        user_uid = user["uid"]
+        user_doc_ref = users_collection.document(user_uid)
+        
+        # 若該使用者已存在則回傳錯誤訊息
+        if user_doc_ref.get().exists:
+            raise HTTPException(status_code=400, detail="用戶已存在")
+        
+        # 建立用戶文件，填入預設頭像與角色
+        user_data = {
+            "avatar": "/images/default-avatar.png",
+            "role": "user"
+        }
+        user_doc_ref.set(user_data)
+        logger.info(f"用戶 {user_uid} 創建成功。")
+        return {"message": "用戶建立成功", "uid": user_uid}
+    except Exception as e:
+        logger.error(f"建立用戶時出錯: {e}")
+        raise HTTPException(status_code=500, detail=f"建立用戶時出錯: {str(e)}")

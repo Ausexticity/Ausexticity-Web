@@ -12,7 +12,6 @@
     <link rel="manifest" href="images/favicon/site.webmanifest">
     <link rel="shortcut icon" href="images/favicon/favicon.ico">
     <meta name="theme-color" content="#ffffff">
-    <link rel="stylesheet" href="css/vendor/aos.css?ver=2023102401">
     <link rel="stylesheet" href="css/main.css?ver=2023102401">
 </head>
 
@@ -70,17 +69,15 @@
     <div class="overlay"></div>
 
     <script src="js/jquery.min.js"></script>
-    <script src="js/aos.js"></script>
     <script src="js/owl.carousel.js"></script>
 
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/misc.js"></script>
-    <script type="module" src="js/script.js"></script>
     <script type="module" src="js/auth.js"></script>
 
     <script type="module">
-        import { signup } from './js/auth.js';
-        import { updateHeader } from './js/misc.js';
+        import { signup, logout } from './js/auth.js';
+        import { createUser } from './js/misc.js';
         import { initializeLoading, showLoading, hideLoading } from './js/loading.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -119,20 +116,31 @@
                         return;
                     }
 
-                    signup(email, password).then((result) => {
+                    signup(email, password).then(async (result) => {
                         if (result) {
-                            updateHeader();
-                            window.location.href = 'index.html';
+                            try {
+                                showLoading();
+                                // 創建用戶
+                                await createUser();
+                                // 登出未驗證的用戶
+                                await logout();
+                                // 等待一下確保資料已經同步
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                                window.location.href = 'index.html';
+                            } catch (error) {
+                                console.error('設定用戶資料時發生錯誤:', error);
+                                alert('註冊成功但設定用戶資料失敗，請稍後在設定頁面中更新您的資料。');
+                                window.location.href = 'index.html';
+                            } finally {
+                                hideLoading();
+                            }
                         }
                     }).catch(error => {
                         console.error('註冊失敗:', error);
-                    }).finally(() => {
                         hideLoading();
                     });
                 });
             }
-
-            updateHeader();
         });
     </script>
 </body>

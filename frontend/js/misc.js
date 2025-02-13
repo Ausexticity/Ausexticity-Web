@@ -1,5 +1,5 @@
 import { API_BASE_URL } from './config.js';
-import { logout, getCurrentUserId, isLoggedIn } from './auth.js';
+import { auth, isLoggedIn, logout } from './auth.js';
 
 // 定義 LocalStorage 鍵名
 const ARTICLES_KEY = 'articles';
@@ -19,28 +19,19 @@ async function updateHeader() {
     if (userIcon) {
         userIcon.style.display = userIsLoggedIn ? 'block' : 'none';
 
-        // 移除舊的事件監聽器
-        const oldUserIcon = userIcon.cloneNode(true);
-        if (userIcon.parentNode) {
-            userIcon.parentNode.replaceChild(oldUserIcon, userIcon);
-        }
-
-        // 如果用戶已登入，添加選單相關的事件監聽
         if (userIsLoggedIn) {
+            // 載入用戶頭像
+            await loadUserAvatar();
+
+            // 移除舊的事件監聽器
+            const oldUserIcon = userIcon.cloneNode(true);
+            if (userIcon.parentNode) {
+                userIcon.parentNode.replaceChild(oldUserIcon, userIcon);
+            }
+
             // 檢查是否為管理員
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/user/role`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('idToken')}`
-                    }
-                });
-                const data = await response.json();
-                if (data.role === 'admin' && adminMenuItem) {
-                    adminMenuItem.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('檢查管理員權限時發生錯誤:', error);
+            if (await getUserRole() === 'admin' && adminMenuItem) {
+                adminMenuItem.style.display = 'block';
             }
 
             // 點擊頭像顯示/隱藏選單
@@ -189,7 +180,6 @@ function truncateTitle(text, maxLength = 20) {
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
-    updateHeader();
     scheduleArticleUpdate();
 });
 
@@ -386,4 +376,144 @@ export async function compressImage(file, options = {}) {
     });
 }
 
-export { updateHeader, fetchArticles, formatPublishedDate, truncateTitle, removeMarkdown };
+/**
+ * 更新用戶頭像
+ * @param {string} imageUrl - 新的頭像 URL
+ * @returns {Promise<boolean>} 更新成功返回 true，失敗返回 false
+ */
+export async function updateUserAvatar(imageUrl) {
+    try {
+        const user = auth.currentUser;
+        if (!user) return false;
+
+        const idToken = await user.getIdToken();
+        const avatarResponse = await fetch(`${API_BASE_URL}/api/user/avatar`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${idToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ avatar: imageUrl })
+        });
+
+        if (!avatarResponse.ok) throw new Error('更新頭像失敗');
+        return true;
+    } catch (error) {
+        console.error('更新用戶頭像時發生錯誤:', error);
+        throw error;
+    }
+}
+
+
+// 載入用戶頭像
+async function loadUserAvatar() {
+    try {
+        const data = await getUserAvatar();
+
+        if (data.avatar) {
+            const userIconElements = document.querySelectorAll('.user-icon');
+            userIconElements.forEach(element => {
+                element.src = data.avatar;
+            });
+        }
+    } catch (error) {
+        console.error('載入頭像時發生錯誤:', error);
+    }
+}
+
+async function getUserAvatar() {
+    try {
+        const user = auth.currentUser;
+        if (!user) return { avatar: null };
+
+        const idToken = await user.getIdToken();
+        const response = await fetch(`${API_BASE_URL}/api/user/avatar`, {
+            headers: {
+                'Authorization': `Bearer ${idToken}`
+            }
+        });
+
+        if (!response.ok) throw new Error('獲取頭像失敗');
+        return await response.json();
+    } catch (error) {
+        console.error('獲取頭像時發生錯誤:', error);
+        return { avatar: null };
+    }
+}
+/**
+ * 清除聊天紀錄
+ * @returns {Promise<boolean>} 清除成功返回 true，失敗返回 false
+ */
+async function clearChatHistory() {
+    try {
+        const idToken = await auth.currentUser.getIdToken();
+        const response = await fetch(`${API_BASE_URL}/api/chat/history`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${idToken}`
+            }
+        });
+
+        if (!response.ok) throw new Error('清除聊天紀錄失敗');
+        return true;
+    } catch (error) {
+        console.error('清除聊天紀錄時發生錯誤:', error);
+        throw error;
+    }
+}
+
+// 取得用戶 role 
+async function getUserRole() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/user/role`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('idToken')}`
+            }
+        });
+        if (!response.ok) throw new Error('獲取用戶角色失敗');
+        const data = await response.json();
+        return data.role;
+    } catch (error) {
+        console.error('檢查管理員權限時發生錯誤:', error);
+        return 'user'; // 預設返回一般用戶角色
+    }
+}
+
+// 更新用戶 role 
+async function updateUserRole(role = 'user') {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/user/role`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('idToken')}`
+            },
+            body: JSON.stringify({ role: role })
+        });
+
+        if (!response.ok) throw new Error('更新用戶 role 失敗');
+        return true;
+    } catch (error) {
+        console.error('更新用戶 role 時發生錯誤:', error);
+        throw error;
+    }
+}
+
+// 創造用戶
+async function createUser() {
+    try {
+        const idToken = await auth.currentUser.getIdToken();
+        const response = await fetch(`${API_BASE_URL}/api/user/create`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${idToken}`
+            }
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('創造用戶時發生錯誤:', error);
+        throw error;
+    }
+}
+
+export { updateHeader, fetchArticles, formatPublishedDate, truncateTitle, removeMarkdown, loadUserAvatar, getUserAvatar, getUserRole, updateUserRole, createUser, clearChatHistory };
