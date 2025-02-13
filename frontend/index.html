@@ -23,8 +23,12 @@
     <header>
         <div class="header-div">
             <div class="outer-div">
-                <div class="brand"><a href="index.html"><img src="images/header_logo.svg"><img
-                            src="images/ausexticity.svg"></a></div>
+                <div class="brand">
+                    <a href="index.html">
+                        <img src="images/header_logo.svg">
+                        <img src="images/ausexticity.svg">
+                    </a>
+                </div>
                 <div class="links">
                     <div class="search-container">
                         <div class="search-wrapper">
@@ -33,16 +37,17 @@
                         </div>
                         <div class="search-suggestions" id="searchSuggestions" style="display: none;">
                             <div class="popular-keywords">
-
                                 <h4>熱門搜尋</h4>
                                 <div class="keyword-list" id="popularTags"></div>
                             </div>
                             <div class="autocomplete-results" id="autocompleteResults"></div>
                         </div>
                     </div>
-                    <a href="login.html" class="login" id="login-link">LOGIN</a>
-                    <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
-                        style="display: none; cursor: pointer;" />
+                    <div class="auth-container">
+                        <a href="login.html" class="login" id="login-link">LOGIN</a>
+                        <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
+                            style="display: none; cursor: pointer;" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -135,7 +140,7 @@
             const chatContainer = document.getElementById('chatContainer');
 
             // 檢查使用者是否已登入
-            const userIsLoggedIn = isLoggedIn();
+            const userIsLoggedIn = await isLoggedIn();
 
             if (userIsLoggedIn) {
                 // 已登入狀態：使用 chat-wrapper 容器包裹 iframe 與全螢幕按鈕

@@ -82,14 +82,14 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
         decoded_token = auth.verify_id_token(token)
         logger.info(f"驗證成功，使用者 UID: {decoded_token['uid']}")
         return decoded_token
-    except firebase_admin._auth_utils.InvalidIdTokenError as e:
+    except auth.InvalidIdTokenError as e:
         logger.error(f"無效的驗證令牌: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="無效的驗證令牌，可能是裝置時間不正確",
+            detail="無效的驗證令牌",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    except firebase_admin._auth_utils.ExpiredIdTokenError as e:
+    except auth.ExpiredIdTokenError as e:
         logger.error(f"驗證令牌已過期: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

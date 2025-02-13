@@ -14,11 +14,11 @@ const editMode = !!articleId;
 let originalImageUrl = '';
 
 // 設定頁面標題和表單標題
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     if (editMode) {
         document.getElementById('page-title').innerText = '編輯文章 - Ausexticity';
         document.getElementById('form-heading').innerText = '編輯文章';
-        fetchArticleDetails(articleId);
+        await fetchArticleDetails(articleId);
     } else {
         document.getElementById('page-title').innerText = '發文 - Ausexticity';
         document.getElementById('form-heading').innerText = '發文';
@@ -32,11 +32,22 @@ document.addEventListener('DOMContentLoaded', () => {
         submitButton.innerText = '提交';
         submitButton.onclick = submitArticle;
     }
+
+    // 檢查登入狀態
+    if (!await isLoggedIn()) {
+        alert('請先登入。');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // 初始化編輯器
+    const editor = new Editor();
+    await editor.initialize();
 });
 
 // 獲取文章詳細資料以進行編輯
 export async function fetchArticleDetails(id) {
-    if (!isLoggedIn()) {
+    if (!await isLoggedIn()) {
         alert('您尚未登入，請先登入。');
         window.location.href = 'login.html';
         return;
@@ -93,7 +104,7 @@ export function populateForm(article) {
 
 // 發布新文章
 export async function submitArticle() {
-    if (!isLoggedIn()) {
+    if (!await isLoggedIn()) {
         alert('您尚未登入，請先登入。');
         window.location.href = 'login.html';
         return;
@@ -165,7 +176,7 @@ export async function submitArticle() {
 
 // 更新現有文章
 export async function updateArticle() {
-    if (!isLoggedIn()) {
+    if (!await isLoggedIn()) {
         alert('您尚未登入，請先登入。');
         window.location.href = 'login.html';
         return;

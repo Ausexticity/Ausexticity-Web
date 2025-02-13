@@ -1,11 +1,20 @@
-import { logout } from './auth.js';
-import { isLoggedIn } from './auth.js';
-import { getCurrentUserId } from './auth.js';
-document.addEventListener('DOMContentLoaded', () => {
-    if (!isLoggedIn()) {
+import { logout, isLoggedIn, getCurrentUserId } from './auth.js';
+import { updateHeader } from './misc.js';
+
+// 等待一小段時間確保 Firebase 完全初始化
+async function checkAuth() {
+    if (!await isLoggedIn()) {
         alert('您尚未登入，請先登入。');
         window.location.href = 'login.html';
+        return false;
     }
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!await checkAuth()) return;
+
+    updateHeader();
 
     const postButton = document.getElementById('btn-navigate-post');
     const editButton = document.getElementById('btn-navigate-edit');
@@ -26,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
 
 // 導航到新增文章
 function navigateToPost() {

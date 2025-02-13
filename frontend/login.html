@@ -20,12 +20,13 @@
     <header>
         <div class="header-div">
             <div class="outer-div">
-
                 <div class="brand"><a href="index.html">
                         <img src="images/header_logo.svg" />
                         <img src="images/ausexticity.svg" />
                     </a></div>
-
+                <div class="links">
+                    <a href="signup.html" class="account" id="signup-link">SIGN UP</a>
+                </div>
             </div>
         </div>
     </header>
@@ -37,7 +38,7 @@
                         <h2>登入</h2>
                         <div class="form-div">
                             <div class="item">
-                                <input type="text" id="username" placeholder="用戶名稱" required>
+                                <input type="email" id="email" placeholder="電子郵件" required>
                             </div>
                             <div class="item">
                                 <input type="password" id="password" placeholder="密碼">
@@ -47,6 +48,9 @@
                             </div>
                             <div class="item action">
                                 <button id="login-btn">登入</button>
+                            </div>
+                            <div class="item action">
+                                <button id="email-link-btn">使用電子郵件連結登入</button>
                             </div>
                             <div class="item remark">還沒有帳號？ <a href="signup.html">註冊</a></div>
                         </div>
@@ -74,28 +78,67 @@
     <script type="module" src="js/auth.js"></script>
 
     <script type="module">
-        import { login } from './js/auth.js';
+        import { login, sendSignInLinkToEmail } from './js/auth.js';
         import { updateHeader } from './js/misc.js';
         import { initializeLoading, showLoading, hideLoading } from './js/loading.js';
+        import { isLoggedIn } from './js/auth.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             await initializeLoading();
 
-            const loginBtn = document.getElementById('login-btn');
-            if (loginBtn) {
-                loginBtn.addEventListener('click', () => {
-                    showLoading();
+            // 檢查是否已經登入
+            if (await isLoggedIn()) {
+                window.location.href = 'index.html';
+                return;
+            }
 
-                    const username = document.getElementById('username').value.trim();
+            const loginBtn = document.getElementById('login-btn');
+            const emailLinkBtn = document.getElementById('email-link-btn');
+
+            if (loginBtn) {
+                loginBtn.addEventListener('click', async () => {
+                    showLoading();
+                    const email = document.getElementById('email').value.trim();
                     const password = document.getElementById('password').value;
 
-                    login(username, password).then(() => {
-                        updateHeader();
-                        window.location.href = 'index.html';
-                    }).catch(error => {
-                        console.error('登入失敗:', error);
+                    try {
+                        const result = await login(email, password);
+                        if (result) {
+                            updateHeader();
+                            window.location.href = 'index.html';
+                        }
+                    } finally {
                         hideLoading();
-                    });
+                    }
+                });
+            }
+
+            if (emailLinkBtn) {
+                emailLinkBtn.addEventListener('click', async () => {
+                    showLoading();
+                    const email = document.getElementById('email').value.trim();
+
+                    if (!email) {
+                        alert('請輸入電子郵件');
+                        hideLoading();
+                        return;
+                    }
+
+                    try {
+                        await sendSignInLinkToEmail(email);
+                        alert('登入連結已發送到您的電子郵件，請查收。');
+                        // 儲存電子郵件到 localStorage，以便在完成登入時使用
+                        window.localStorage.setItem('emailForSignIn', email);
+                    } catch (error) {
+                        console.error('發送登入連結失敗:', error);
+                        if (error.message) {
+                            alert(error.message);
+                        } else {
+                            alert('發送登入連結失敗，請稍後再試。');
+                        }
+                    } finally {
+                        hideLoading();
+                    }
                 });
             }
 

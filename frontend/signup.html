@@ -21,13 +21,12 @@
     <header>
         <div class="header-div">
             <div class="outer-div">
-                <div class="links">
-                    <a href="index.html" class="home">HOME</a>
-                </div>
-                <div class="brand"><a href="index.html"><img src="images/ausexticity.svg"></a></div>
+                <div class="brand"><a href="index.html">
+                        <img src="images/header_logo.svg" />
+                        <img src="images/ausexticity.svg" />
+                    </a></div>
                 <div class="links">
                     <a href="login.html" class="account" id="login-link">LOGIN</a>
-
                     <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
                         style="display: none;">
                 </div>
@@ -42,10 +41,12 @@
                         <h2>註冊</h2>
                         <div class="form-div">
                             <div class="item">
-                                <input type="text" id="username" placeholder="用戶名稱" required>
+                                <input type="email" id="email" placeholder="電子郵件" required>
+                                <small class="verification-hint">註冊後，我們會寄送驗證信到您的電子郵件信箱</small>
                             </div>
                             <div class="item">
                                 <input type="password" id="password" placeholder="密碼" required>
+                                <small class="password-hint">密碼至少需要 6 個字元</small>
                             </div>
                             <div class="item">
                                 <input type="password" id="password_confirm" placeholder="確認密碼" required>
@@ -88,12 +89,32 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await initializeLoading();
             const signUpBtn = document.getElementById('sign-up-btn');
+
             if (signUpBtn) {
                 signUpBtn.addEventListener('click', () => {
                     showLoading();
-                    const username = document.getElementById('username').value.trim();
+                    const email = document.getElementById('email').value.trim();
                     const password = document.getElementById('password').value;
                     const passwordConfirm = document.getElementById('password_confirm').value;
+
+                    // 基本驗證
+                    if (!email) {
+                        alert('請輸入電子郵件！');
+                        hideLoading();
+                        return;
+                    }
+
+                    if (!password) {
+                        alert('請輸入密碼！');
+                        hideLoading();
+                        return;
+                    }
+
+                    if (password.length < 6) {
+                        alert('密碼長度至少需要 6 個字元！');
+                        hideLoading();
+                        return;
+                    }
 
                     if (password !== passwordConfirm) {
                         alert('密碼與確認密碼不一致！');
@@ -101,11 +122,14 @@
                         return;
                     }
 
-                    signup(username, password).then(() => {
-                        updateHeader();
-                        window.location.href = 'index.html';
+                    signup(email, password).then((result) => {
+                        if (result) {
+                            updateHeader();
+                            window.location.href = 'index.html';
+                        }
                     }).catch(error => {
                         console.error('註冊失敗:', error);
+                    }).finally(() => {
                         hideLoading();
                     });
                 });
@@ -113,10 +137,6 @@
 
             updateHeader();
         });
-    </script>
-
-    <script>
-        AOS.init();
     </script>
 </body>
 

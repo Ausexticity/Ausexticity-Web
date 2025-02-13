@@ -1054,7 +1054,7 @@ main {
   }
 }
 
-@media all and (max-width: 375px) {
+@media all and (max-width: 400px) {
   .body-brown header .header-div .outer-div .brand {
     height: 35px;
   }
@@ -1066,6 +1066,27 @@ main {
   .body-brown header .header-div .outer-div .brand a img:nth-child(2) {
     height: 18px;
   }
+
+  header .header-div .outer-div .brand a img:nth-child(1) {
+    height: 35px;
+  }
+
+  header .header-div .outer-div .brand a img:nth-child(2) {
+    height: 18px;
+  }
+
+  header .header-div .outer-div .links a {
+    font-size: 20px;
+    background-image: url(./../images/header_dot.svg);
+    background-size: 25px 25px;
+    padding-left: 10px;
+  }
+
+  .user-icon {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
 }
 
 .section-adult-beauty {
@@ -3353,4 +3374,19 @@ header .nav-search-input.expanded {
   .banner-slide {
     min-width: 100%;
   }
+}
+
+.password-hint {
+  color: #ffffff;
+  font-size: 0.8em;
+  margin-top: 4px;
+  display: block;
+}
+
+.verification-hint {
+  color: #ffffff;
+  font-size: 0.8em;
+  /* text-align: center; */
+  display: block;
+  margin-top: 4px;
 }

@@ -1,32 +1,42 @@
 import { API_BASE_URL } from './config.js';
-import { logout, getCurrentUserId } from './auth.js';
+import { logout, getCurrentUserId, isLoggedIn } from './auth.js';
 
 // 定義 LocalStorage 鍵名
 const ARTICLES_KEY = 'articles';
 const ARTICLES_TIMESTAMP_KEY = 'articles_timestamp';
 const CACHE_DURATION = 60 * 60 * 1000; // 1 小時
 
-function updateHeader() {
-    const token = localStorage.getItem('idToken');
+async function updateHeader() {
+    const userIsLoggedIn = await isLoggedIn();
     const loginLink = document.getElementById('login-link');
     const userIcon = document.getElementById('user-icon');
 
-    if (loginLink && userIcon) {
-        if (token) {
-            loginLink.style.display = 'none';
-            userIcon.style.display = 'block';
+    if (loginLink) loginLink.style.display = userIsLoggedIn ? 'none' : 'block';
+    if (userIcon) {
+        userIcon.style.display = userIsLoggedIn ? 'block' : 'none';
 
-            // 先移除所有已存在的點擊事件
-            const oldUserIcon = userIcon.cloneNode(true);
+        // 移除舊的事件監聽器
+        const oldUserIcon = userIcon.cloneNode(true);
+        if (userIcon.parentNode) {
             userIcon.parentNode.replaceChild(oldUserIcon, userIcon);
+        }
 
-            // 添加新的點擊事件，導向管理頁面
-            oldUserIcon.addEventListener('click', () => {
-                window.location.href = 'admin.html';
+        // 添加新的事件監聽器
+        if (userIsLoggedIn) {
+            oldUserIcon.addEventListener('click', async () => {
+                const shouldLogout = confirm('是否要登出？');
+                if (shouldLogout) {
+                    await logout();
+                } else {
+                    // 再次確認登入狀態後才導向 admin 頁面
+                    if (await isLoggedIn()) {
+                        window.location.href = 'admin.html';
+                    } else {
+                        alert('您的登入狀態已過期，請重新登入。');
+                        window.location.href = 'login.html';
+                    }
+                }
             });
-        } else {
-            loginLink.style.display = 'block';
-            userIcon.style.display = 'none';
         }
     }
 }
@@ -184,27 +194,27 @@ export async function uploadImage(file) {
 function getBlobName(url) {
     try {
         const parsedUrl = new URL(url);
-        
+
         // 驗證是否為 Firebase Storage 的合法網址
         if (parsedUrl.hostname !== 'storage.googleapis.com') {
             console.error('非法的 Storage 網域');
             return null;
         }
-        
+
         // 解析路徑取得 bucket 名稱和檔案路徑
         const pathParts = parsedUrl.pathname.split('/').filter(part => part);
         if (pathParts.length < 2) {
             console.error('無效的 Storage URL 格式');
             return null;
         }
-        
+
         // 驗證 bucket 名稱
         const bucketName = pathParts[0];
         if (bucketName !== 'eros-web-94e22.firebasestorage.app') {
             console.error('Storage bucket 不符合');
             return null;
         }
-        
+
         // 取得檔案路徑 (去除 bucket 名稱後的部分)
         return pathParts.slice(1).join('/');
     } catch (error) {
