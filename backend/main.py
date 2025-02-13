@@ -492,3 +492,81 @@ def delete_image(request: DeleteImageRequest, user: dict = Depends(verify_token)
         else:
             logger.error(f"刪除圖片時出錯: {str(e)}")
             raise HTTPException(status_code=500, detail=f"刪除圖片時出錯: {str(e)}")
+
+# 新增使用者角色 API
+class RoleRequest(BaseModel):
+    role: str
+
+@app.get("/api/user/role")
+def get_user_role(user: dict = Depends(verify_token)):
+    """
+    取得當前使用者的角色
+    """
+    try:
+        # 從 Firestore 取得使用者資料，文件 id 預設為 token 中的 uid
+        user_doc = users_collection.document(user['uid']).get()
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            return {"role": user_data.get("role", "")}
+        else:
+            raise HTTPException(status_code=404, detail="找不到使用者資料")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"取得使用者角色時出錯：{str(e)}")
+
+@app.post("/api/user/role")
+def set_user_role(request: RoleRequest, user: dict = Depends(verify_token)):
+    """
+    更新當前使用者的角色
+    """
+    try:
+        # 更新使用者文件內的 role 欄位
+        users_collection.document(user['uid']).update({"role": request.role})
+        return {"message": "使用者角色更新成功"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"更新使用者角色時出錯：{str(e)}")
+
+
+# 新增刪除聊天紀錄 API
+@app.delete("/api/chat/history")
+def delete_chat_history(user: dict = Depends(verify_token)):
+    """
+    刪除當前使用者的聊天紀錄
+    """
+    try:
+        chat_history_ref = db.collection('chat_histories').document(user['uid'])
+        chat_history_ref.delete()
+        return {"message": "聊天紀錄刪除成功"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"刪除聊天紀錄時出錯：{str(e)}")
+
+
+# 新增使用者頭像相關 API
+class AvatarRequest(BaseModel):
+    avatar: str  # 使用上傳圖片 /api/upload_image 回傳的圖片 URL
+
+@app.get("/api/user/avatar")
+def get_user_avatar(user: dict = Depends(verify_token)):
+    """
+    取得當前使用者的頭像 URL
+    """
+    try:
+        user_doc = users_collection.document(user['uid']).get()
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            return {"avatar": user_data.get("avatar", None)}
+        else:
+            raise HTTPException(status_code=404, detail="找不到使用者資料")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"取得頭像時出錯：{str(e)}")
+
+@app.post("/api/user/avatar")
+def set_user_avatar(request: AvatarRequest, user: dict = Depends(verify_token)):
+    """
+    更新當前使用者的頭像 URL
+    注意：上傳圖片請使用已實作的 /api/upload_image，獲取圖片公開 URL 後，再透過此 API 更新頭像。
+    """
+    try:
+        users_collection.document(user['uid']).update({"avatar": request.avatar})
+        return {"message": "使用者頭像更新成功"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"更新頭像時出錯：{str(e)}")
