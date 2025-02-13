@@ -19,6 +19,11 @@ marked.setOptions({
     xhtml: false
 });
 
+// 快取相關變數
+let chatHistoriesCache = null;
+let lastCacheTime = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 快取有效期為 5 分鐘
+
 // 取得所有使用者資料的 API
 async function getAllUsers() {
     try {
@@ -43,8 +48,19 @@ async function getAllUsers() {
 }
 
 // 取得所有聊天記錄的 API
-async function getAllChatHistories() {
+async function getAllChatHistories(forceRefresh = false) {
     try {
+        // 檢查快取是否有效
+        const now = Date.now();
+        if (!forceRefresh &&
+            chatHistoriesCache &&
+            lastCacheTime &&
+            (now - lastCacheTime < CACHE_DURATION)) {
+            console.log('使用快取的聊天記錄');
+            return chatHistoriesCache;
+        }
+
+        console.log('重新獲取聊天記錄');
         const response = await fetch(`${API_BASE_URL}/api/admin/chat_histories`, {
             method: 'GET',
             headers: {
@@ -58,11 +74,21 @@ async function getAllChatHistories() {
         }
 
         const data = await response.json();
+        // 更新快取
+        chatHistoriesCache = data.chat_histories;
+        lastCacheTime = now;
+
         return data.chat_histories;
     } catch (error) {
         console.error('獲取聊天記錄時發生錯誤:', error);
         throw error;
     }
+}
+
+// 清除快取的函數
+function clearChatHistoriesCache() {
+    chatHistoriesCache = null;
+    lastCacheTime = null;
 }
 
 // 更新使用者角色的 API
@@ -83,6 +109,8 @@ async function updateUserRole(userId, newRole) {
         }
 
         const data = await response.json();
+        // 清除快取，確保下次獲取最新資料
+        clearChatHistoriesCache();
         return data.message;
     } catch (error) {
         console.error('更新使用者角色時發生錯誤:', error);
@@ -145,14 +173,14 @@ async function updateUsersTable() {
 }
 
 // 顯示聊天記錄
-async function showChatHistory(userId) {
+async function showChatHistory(userId, forceRefresh = false) {
     try {
         const modal = document.getElementById('chat-history-modal');
         const content = document.getElementById('chat-history-content');
         content.innerHTML = '<div class="loading-spinner"></div>';
         modal.style.display = 'block';
 
-        const chatHistories = await getAllChatHistories();
+        const chatHistories = await getAllChatHistories(forceRefresh);
         const userChatHistory = chatHistories.find(history => history.user_id === userId);
 
         if (!userChatHistory || !userChatHistory.messages || userChatHistory.messages.length === 0) {
