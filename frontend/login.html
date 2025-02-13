@@ -12,6 +12,7 @@
     <link rel="manifest" href="images/favicon/site.webmanifest">
     <link rel="shortcut icon" href="images/favicon/favicon.ico">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
@@ -94,23 +95,41 @@
 
             const loginBtn = document.getElementById('login-btn');
             const emailLinkBtn = document.getElementById('email-link-btn');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+
+            // 添加按下 Enter 鍵登入的功能
+            const handleLogin = async () => {
+                showLoading();
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+
+                if (!email || !password) {
+                    alert('請填寫所有欄位');
+                    hideLoading();
+                    return;
+                }
+
+                try {
+                    const result = await login(email, password);
+                    if (result) {
+                        await updateHeader();
+                        window.location.href = 'index.html';
+                    }
+                } finally {
+                    hideLoading();
+                }
+            };
+
+            // 監聽 Enter 鍵
+            document.addEventListener('keypress', async (e) => {
+                if (e.key === 'Enter') {
+                    await handleLogin();
+                }
+            });
 
             if (loginBtn) {
-                loginBtn.addEventListener('click', async () => {
-                    showLoading();
-                    const email = document.getElementById('email').value.trim();
-                    const password = document.getElementById('password').value;
-
-                    try {
-                        const result = await login(email, password);
-                        if (result) {
-                            updateHeader();
-                            window.location.href = 'index.html';
-                        }
-                    } finally {
-                        hideLoading();
-                    }
-                });
+                loginBtn.addEventListener('click', handleLogin);
             }
 
             if (emailLinkBtn) {

@@ -15,8 +15,9 @@
     <link rel="stylesheet" href="css/vendor/aos.css?ver=2023102401">
     <link rel="stylesheet" href="css/vendor/owl.carousel.css?ver=2023100726">
     <link rel="stylesheet" href="css/main.css?ver=2023102401">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/nav-list.css">
     <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous">
 </head>
 
 <body class="body-home">
@@ -45,8 +46,33 @@
                     </div>
                     <div class="auth-container">
                         <a href="login.html" class="login" id="login-link">LOGIN</a>
-                        <img src="images/article_img_06.png" alt="User" class="user-icon" id="user-icon"
-                            style="display: none; cursor: pointer;" />
+                        <div class="user-icon-container">
+                            <img src="images/default-avatar.png" alt="User" class="user-icon" id="user-icon"
+                                style="display: none;" />
+                            <div class="user-menu" id="userMenu">
+                                <ul class="user-menu-list">
+                                    <li class="user-menu-item admin" id="adminMenuItem" style="display: none;">
+                                        <a href="admin.html" class="user-menu-link">
+                                            <i class="fas fa-user-shield"></i>
+                                            管理頁面
+                                        </a>
+                                    </li>
+                                    <li class="user-menu-item">
+                                        <a href="settings.html" class="user-menu-link">
+                                            <i class="fas fa-cog"></i>
+                                            設定頁面
+                                        </a>
+                                    </li>
+                                    <div class="user-menu-divider"></div>
+                                    <li class="user-menu-item logout">
+                                        <a href="#" class="user-menu-link" id="logoutLink">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                            登出
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -139,31 +165,33 @@
             showLoading();
             const chatContainer = document.getElementById('chatContainer');
 
-            // 檢查使用者是否已登入
-            const userIsLoggedIn = await isLoggedIn();
-
-            if (userIsLoggedIn) {
-                // 已登入狀態：使用 chat-wrapper 容器包裹 iframe 與全螢幕按鈕
-                chatContainer.innerHTML = `
-                    <div class="chat-wrapper">
-                        <iframe src="/chat" class="chat-iframe" frameborder="0"></iframe>
-                        <button onclick="window.location.href='/chat'" title="全螢幕" class="chat-fullscreen-btn">
-                            <i class="fas fa-expand"></i>
-                        </button>
-                    </div>
-                `;
-            } else {
-                // 未登入狀態：顯示提示訊息與登入引導區塊
-                chatContainer.innerHTML = `
-                    <div class="chat-login-container">
-                        <img src="images/chat_screen.jpg" alt="Login Required" class="chat-login-img">
-                        <h3 class="chat-login-title">請先登入以使用 Chatbot</h3>
-                        <a href="login.html" class="chat-login-btn">立即登入</a>
-                    </div>
-                `;
-            }
-
             try {
+                // 先等待 Firebase 初始化完成
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // 檢查使用者是否已登入
+                const userIsLoggedIn = await isLoggedIn();
+
+                // 根據登入狀態更新聊天機器人界面
+                if (userIsLoggedIn) {
+                    chatContainer.innerHTML = `
+                        <div class="chat-wrapper">
+                            <iframe src="/chat" class="chat-iframe" frameborder="0"></iframe>
+                            <button onclick="window.location.href='/chat'" title="全螢幕" class="chat-fullscreen-btn">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    chatContainer.innerHTML = `
+                        <div class="chat-login-container">
+                            <img src="images/chat_screen.jpg" alt="Login Required" class="chat-login-img">
+                            <h3 class="chat-login-title">請先登入以使用 Chatbot</h3>
+                            <a href="login.html" class="chat-login-btn">立即登入</a>
+                        </div>
+                    `;
+                }
+
                 // 獲取文章資料
                 const articles = await fetchArticles();
 

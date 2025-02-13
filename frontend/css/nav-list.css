@@ -1,0 +1,128 @@
+.user-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(21, 47, 43, 0.15);
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.user-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-menu-list {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+}
+
+.user-menu-item {
+    padding: 0;
+    margin: 0;
+}
+
+.user-menu-link {
+    display: flex !important;
+    align-items: center !important;
+    padding: 12px 20px !important;
+    color: #152F2B !important;
+    text-decoration: none !important;
+    font-size: 14px !important;
+    transition: all 0.3s ease !important;
+    background-image: none !important;
+    padding-left: 20px !important;
+    font-family: "Noto Sans TC", sans-serif !important;
+    margin: 0 !important;
+    line-height: 1.4 !important;
+    border: none !important;
+    background-color: transparent !important;
+    font-weight: normal !important;
+}
+
+.user-menu-link i {
+    margin-right: 12px;
+    font-size: 16px !important;
+    color: #954527 !important;
+    transition: all 0.3s ease;
+    padding: 0 !important;
+}
+
+.user-menu-link:hover {
+    background-color: #F1E3CB !important;
+    color: #E06609 !important;
+    text-decoration: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+.user-menu-link:hover i {
+    color: #E06609 !important;
+}
+
+.user-menu-divider {
+    height: 1px;
+    background-color: #E0D5C1;
+    margin: 8px 0;
+}
+
+/* 管理員選項特殊樣式 - 確保優先級 */
+.user-menu-item.admin .user-menu-link {
+    color: #954527 !important;
+    font-weight: 500 !important;
+}
+
+.user-menu-item.admin .user-menu-link:hover {
+    background-color: #954527 !important;
+    color: #FFFFFF !important;
+}
+
+.user-menu-item.admin .user-menu-link:hover i {
+    color: #FFFFFF !important;
+}
+
+/* 登出選項特殊樣式 - 確保優先級 */
+.user-menu-item.logout .user-menu-link {
+    color: #dc3545 !important;
+}
+
+.user-menu-item.logout .user-menu-link:hover {
+    background-color: #dc3545 !important;
+    color: #FFFFFF !important;
+}
+
+.user-menu-item.logout .user-menu-link:hover i {
+    color: #FFFFFF !important;
+}
+
+/* 使用者頭像容器相對定位 */
+.user-icon-container {
+    position: relative;
+    cursor: pointer;
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .user-menu {
+        min-width: 160px;
+    }
+
+    .user-menu-link {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .user-menu-link i {
+        font-size: 14px;
+        margin-right: 10px;
+    }
+}

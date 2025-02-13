@@ -10,8 +10,12 @@ async function updateHeader() {
     const userIsLoggedIn = await isLoggedIn();
     const loginLink = document.getElementById('login-link');
     const userIcon = document.getElementById('user-icon');
+    const userMenu = document.getElementById('userMenu');
+    const adminMenuItem = document.getElementById('adminMenuItem');
+    const logoutLink = document.getElementById('logoutLink');
 
     if (loginLink) loginLink.style.display = userIsLoggedIn ? 'none' : 'block';
+
     if (userIcon) {
         userIcon.style.display = userIsLoggedIn ? 'block' : 'none';
 
@@ -21,24 +25,64 @@ async function updateHeader() {
             userIcon.parentNode.replaceChild(oldUserIcon, userIcon);
         }
 
-        // 添加新的事件監聽器
+        // 如果用戶已登入，添加選單相關的事件監聽
         if (userIsLoggedIn) {
-            oldUserIcon.addEventListener('click', async () => {
-                const shouldLogout = confirm('是否要登出？');
-                if (shouldLogout) {
-                    await logout();
-                } else {
-                    // 再次確認登入狀態後才導向 admin 頁面
-                    if (await isLoggedIn()) {
-                        window.location.href = 'admin.html';
-                    } else {
-                        alert('您的登入狀態已過期，請重新登入。');
-                        window.location.href = 'login.html';
+            // 檢查是否為管理員
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/user/role`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('idToken')}`
                     }
+                });
+                const data = await response.json();
+                if (data.role === 'admin' && adminMenuItem) {
+                    adminMenuItem.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('檢查管理員權限時發生錯誤:', error);
+            }
+
+            // 點擊頭像顯示/隱藏選單
+            oldUserIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (userMenu) {
+                    userMenu.classList.toggle('active');
                 }
             });
+
+            // 移除舊的登出事件監聽器並添加新的
+            if (logoutLink) {
+                const newLogoutLink = logoutLink.cloneNode(true);
+                if (logoutLink.parentNode) {
+                    logoutLink.parentNode.replaceChild(newLogoutLink, logoutLink);
+                }
+
+                newLogoutLink.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const shouldLogout = confirm('是否要登出？');
+                    if (shouldLogout) {
+                        await logout();
+                        window.location.reload();
+                    }
+                });
+            }
+
+            // 移除舊的文檔點擊事件監聽器
+            const documentClickHandler = (e) => {
+                if (userMenu && !userMenu.contains(e.target) && !oldUserIcon.contains(e.target)) {
+                    userMenu.classList.remove('active');
+                }
+            };
+
+            // 移除所有舊的事件監聽器
+            document.removeEventListener('click', documentClickHandler);
+            // 添加新的事件監聽器
+            document.addEventListener('click', documentClickHandler);
         }
     }
+
+    return userIsLoggedIn;
 }
 
 // 追蹤進行中的文章請求

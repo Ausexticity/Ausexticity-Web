@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport"
+        content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=yes,viewport-fit=cover">
+    <title>個人設定 - Ausexticity</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="images/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="images/favicon/favicon.ico">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/settings.css">
+</head>
+
+<body class="body-settings">
+    <header>
+        <div class="header-div">
+            <div class="outer-div">
+                <div class="brand"><a href="index.html">
+                        <img src="images/header_logo.svg" alt="Ausexticity Logo">
+                        <img src="images/ausexticity.svg"></a></div>
+                <div class="links">
+                    <a href="#" class="logout" id="logout-link">LOGOUT</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main>
+        <section class="section-settings">
+            <div class="outer-div">
+                <h2>個人設定</h2>
+                <div class="settings-content">
+                    <div class="settings-form">
+                        <!-- 頭像設定 -->
+                        <div class="settings-item">
+                            <h3>頭像設定</h3>
+                            <div class="avatar-container">
+                                <img id="current-avatar" src="images/default-avatar.png" alt="用戶頭像">
+                                <input type="file" id="avatar-upload" accept="image/*">
+                                <button id="btn-upload-avatar">更新頭像</button>
+                            </div>
+                        </div>
+
+                        <!-- 用戶名稱設定 -->
+                        <div class="settings-item">
+                            <h3>用戶名稱</h3>
+                            <div class="input-group">
+                                <input type="text" id="username" placeholder="輸入新的用戶名稱">
+                                <button id="btn-update-username">更新用戶名稱</button>
+                            </div>
+                        </div>
+
+                        <!-- 密碼重設 -->
+                        <div class="settings-item">
+                            <h3>重設密碼</h3>
+                            <div class="input-group">
+                                <input type="password" id="current-password" placeholder="當前密碼">
+                                <input type="password" id="new-password" placeholder="新密碼">
+                                <input type="password" id="confirm-password" placeholder="確認新密碼">
+                                <button id="btn-reset-password">重設密碼</button>
+                            </div>
+                        </div>
+
+                        <!-- 聊天紀錄管理 -->
+                        <div class="settings-item">
+                            <h3>聊天紀錄管理</h3>
+                            <div class="chat-history-actions">
+                                <button id="btn-clear-chat" class="danger-button">清除所有聊天紀錄</button>
+                                <p class="warning-text">注意：此操作無法復原</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/jquery.min.js"></script>
+    <script type="module" src="js/settings.js"></script>
+</body>
+
+</html>

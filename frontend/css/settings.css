@@ -1,0 +1,242 @@
+/* 設定頁面的主體樣式 */
+.body-settings {
+    background-color: #F1E3CB;
+}
+
+.section-settings {
+    background-image: url(./../images/admin_deco.svg);
+    background-position: center bottom;
+    background-size: 100% auto;
+    background-repeat: no-repeat;
+    padding: 60px 0;
+    min-height: calc(100vh - 98.39px - 60px);
+}
+
+.section-settings .outer-div {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.section-settings .outer-div h2 {
+    color: #152F2B;
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.section-settings .outer-div h2:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 2px;
+    background-color: #152F2B;
+}
+
+/* 設定表單樣式 */
+.settings-form {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 16px rgba(21, 47, 43, 0.1);
+}
+
+.settings-item {
+    margin-bottom: 30px;
+}
+
+.settings-item h3 {
+    color: #152F2B;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+/* 頭像設定區域 */
+.avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.avatar-container img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #E0D5C1;
+    box-shadow: 0 4px 8px rgba(21, 47, 43, 0.1);
+}
+
+.avatar-container input[type="file"] {
+    display: none;
+}
+
+.avatar-container button {
+    background-color: #954527;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.avatar-container button:hover {
+    background-color: #E06609;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(224, 102, 9, 0.2);
+}
+
+/* 輸入框組樣式 */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #E0D5C1;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: #954527;
+    box-shadow: 0 0 0 3px rgba(149, 69, 39, 0.1);
+    outline: none;
+}
+
+.input-group button {
+    background-color: #954527;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.input-group button:hover {
+    background-color: #E06609;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(224, 102, 9, 0.2);
+}
+
+/* 聊天紀錄管理區域 */
+.chat-history-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.danger-button {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.danger-button:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+}
+
+.warning-text {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* 響應式設計 */
+@media all and (max-width: 768px) {
+    .section-settings {
+        padding: 40px 0;
+    }
+
+    .section-settings .outer-div {
+        padding: 0 15px;
+    }
+
+    .section-settings .outer-div h2 {
+        font-size: 28px;
+        margin-bottom: 30px;
+    }
+
+    .settings-form {
+        padding: 30px 20px;
+    }
+
+    .settings-item h3 {
+        font-size: 18px;
+    }
+
+    .avatar-container img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .input-group button,
+    .danger-button {
+        width: 100%;
+        align-self: stretch;
+    }
+}
+
+@media all and (max-width: 480px) {
+    .section-settings {
+        padding: 30px 0;
+    }
+
+    .section-settings .outer-div h2 {
+        font-size: 24px;
+        margin-bottom: 25px;
+    }
+
+    .settings-form {
+        padding: 20px 15px;
+    }
+
+    .settings-item h3 {
+        font-size: 16px;
+    }
+
+    .avatar-container img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .input-group input {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    .input-group button,
+    .danger-button {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+
+    .warning-text {
+        font-size: 12px;
+    }
+}
