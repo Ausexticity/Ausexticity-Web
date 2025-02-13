@@ -513,7 +513,9 @@ def delete_article(article_id: str, user: dict = Depends(verify_token)):
         
         # 刪除文章前，若包含圖片則先刪除圖片
         if "image_url" in doc_data and doc_data["image_url"] is not None:
-            delete_image(DeleteImageRequest(image_url=doc_data["image_url"]), user)
+            bucket_url_prefix = f"https://storage.googleapis.com/{bucket.name}/"
+            if doc_data["image_url"].startswith(bucket_url_prefix):
+                delete_image(DeleteImageRequest(image_url=doc_data["image_url"]), user)
         
         # 刪除文章
         doc_ref.delete()
@@ -707,16 +709,41 @@ async def get_all_users(user: dict = Depends(verify_token)):
     await check_admin_permission(user)
     try:
         users = []
-        # 獲取所有使用者資料
-        user_docs = users_collection.stream()
+        # 先從 Firebase Auth 獲取所有使用者
+        auth_users_iterator = auth.list_users()
         
+        # 獲取所有 Firestore 使用者資料並建立映射
+        firestore_users = {}
+        user_docs = users_collection.stream()
         for doc in user_docs:
-            user_data = doc.to_dict()
-            user_data['uid'] = doc.id  # 添加使用者 ID
+            firestore_users[doc.id] = doc.to_dict()
+        
+        # 遍歷 Firebase Auth 使用者並合併資料
+        for auth_user in auth_users_iterator.iterate_all():
+            user_data = {
+                'uid': auth_user.uid,
+                'email': auth_user.email,
+                'displayName': auth_user.display_name
+            }
+            
+            # 如果在 Firestore 中有對應資料，則合併
+            if auth_user.uid in firestore_users:
+                firestore_data = firestore_users[auth_user.uid]
+                user_data.update(firestore_data)
+            else:
+                # 如果在 Firestore 中沒有資料，設置預設值
+                user_data['role'] = 'user'
+                # 在 Firestore 中創建新的使用者文件
+                users_collection.document(auth_user.uid).set({
+                    'role': 'user',
+                    'avatar': '/images/default-avatar.png'
+                })
+            
             users.append(user_data)
             
         return {"users": users}
     except Exception as e:
+        logger.error(f"獲取所有使用者資料時出錯：{str(e)}")
         raise HTTPException(status_code=500, detail=f"獲取所有使用者資料時出錯：{str(e)}")
 
 # Admin API：設定其他使用者的角色

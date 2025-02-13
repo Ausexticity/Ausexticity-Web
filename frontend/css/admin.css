@@ -181,6 +181,24 @@ select.role-select option:hover {
     overflow: hidden;
 }
 
+.modal-header {
+    background-color: #F8E0BC;
+    padding: 12px;
+    border-bottom: 1px solid #E0D5C1;
+    border-radius: 20px 20px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #152F2B;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+}
+
 .close {
     position: absolute;
     right: 15px;
@@ -218,6 +236,21 @@ select.role-select option:hover {
 .chat-entry {
     margin-bottom: 12px;
     position: relative;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .chat-entry .timestamp {
@@ -225,7 +258,6 @@ select.role-select option:hover {
     color: #888;
     text-align: center;
     margin: 8px 0;
-    position: sticky;
     top: 0;
     background-color: rgba(255, 255, 255, 0.9);
     padding: 5px;
@@ -239,6 +271,7 @@ select.role-select option:hover {
     position: relative;
     margin: 3px 0;
     word-wrap: break-word;
+    max-width: 80%;
 }
 
 .chat-entry .message p {
@@ -259,6 +292,97 @@ select.role-select option:hover {
     color: #fff;
     float: left;
     clear: both;
+}
+
+/* Markdown 內容樣式 */
+.markdown-content {
+    line-height: 1.8;
+    font-size: 0.95em;
+}
+
+.markdown-content p {
+    margin: 0 0 0.8em 0;
+}
+
+.markdown-content p:last-child {
+    margin-bottom: 0;
+}
+
+.markdown-content code {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.markdown-content pre {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 8px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.8em 0;
+}
+
+.markdown-content pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+.markdown-content ul {
+    margin: 0.8em 0;
+    padding-left: 2.5em;
+    color: inherit;
+    list-style-position: outside;
+}
+
+.markdown-content ol {
+    margin: 0.8em 0;
+    padding-left: 2em;
+    color: inherit;
+    list-style-position: outside;
+}
+
+.markdown-content ul li,
+.markdown-content ol li {
+    margin-bottom: 0.5em;
+    padding-left: 0.5em;
+}
+
+.markdown-content blockquote {
+    margin: 0.8em 0;
+    padding-left: 1em;
+    border-left: 3px solid rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.7);
+}
+
+/* 針對深色背景的 AI 訊息調整樣式 */
+.ai-message .markdown-content {
+    color: #fff;
+}
+
+.ai-message .markdown-content code {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.ai-message .markdown-content pre {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.ai-message .markdown-content ul,
+.ai-message .markdown-content ol {
+    color: #fff;
+}
+
+.ai-message .markdown-content ul {
+    list-style: disc;
+}
+
+.ai-message .markdown-content ol {
+    list-style: decimal;
+}
+
+.ai-message .markdown-content strong {
+    font-weight: 600;
 }
 
 /* 移除原有的氣泡尾巴 */
@@ -368,5 +492,30 @@ select.role-select option:hover {
     .chat-history-btn {
         padding: 5px 10px;
         font-size: 12px;
+    }
+}
+
+/* 添加載入動畫 */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: #954527;
+}
+
+.loading-spinner::after {
+    content: "";
+    width: 30px;
+    height: 30px;
+    border: 3px solid #F1E3CB;
+    border-top-color: #954527;
+    border-radius: 50%;
+    animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
     }
 }
