@@ -5,6 +5,23 @@ import { formatPublishedDate, fetchArticles } from './misc.js';
 import { readURL, getSelectedTags, addTag } from './post.js';
 import { showLoading, hideLoading } from './loading.js';
 
+class Editor {
+    constructor() {
+        this.initialized = false;
+    }
+
+    async initialize() {
+        if (this.initialized) {
+            return;
+        }
+
+        // 初始化編輯器相關的事件監聽器
+        this.setupEventListeners();
+
+        this.initialized = true;
+    }
+}
+
 // 獲取 URL 中的 id 參數以判斷是否為編輯模式
 const urlParams = new URLSearchParams(window.location.search);
 const articleId = urlParams.get('id');
@@ -56,11 +73,11 @@ export async function fetchArticleDetails(id) {
     showLoading();
     try {
         const articles = await fetchArticles(true);
-        const userArticles = articles.filter(article => article.id === id && article.user_id === getCurrentUserId());
+        const userArticles = articles.filter(article => article.id === id);
 
         if (userArticles.length === 0) {
             alert('找不到指定的文章。');
-            window.location.href = 'search.html?user_id=' + getCurrentUserId() + '&edit=true';
+            window.location.href = 'search.html?edit=true';
             return;
         }
         populateForm(userArticles[0]);

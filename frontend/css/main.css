@@ -3392,3 +3392,24 @@ header .nav-search-input.expanded {
   display: block;
   margin-top: 4px;
 }
+
+.cf-turnstile {
+  width: 100% !important;
+  margin: 10px 0;
+}
+
+.cf-turnstile div {
+  width: 100% !important;
+}
+
+.cf-turnstile iframe {
+  width: 100% !important;
+  overflow: hidden;
+}
+
+/* 確保 turnstile 容器在表單中正確對齊 */
+.form-div .item .cf-turnstile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

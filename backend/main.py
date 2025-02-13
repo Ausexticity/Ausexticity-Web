@@ -25,6 +25,7 @@ import urllib.parse
 from urllib.parse import urlparse
 from sse_starlette.sse import EventSourceResponse   # 引入 SSE 回應類別
 import json
+import aiohttp
 
 app = FastAPI()
 logger = logging.getLogger('uvicorn.error')
@@ -105,12 +106,71 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
         )
         
 
+# 新增 Turnstile 驗證函數
+async def verify_turnstile_token(token: str) -> bool:
+    """驗證 Turnstile token"""
+    secret_key = os.getenv('CLOUDFLARE_SECRET_KEY')
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            data={
+                'secret': secret_key,
+                'response': token
+            }
+        ) as response:
+            result = await response.json()
+            return result.get('success', False)
+
+
+def verify_owner_or_admin(resource_owner: str, current_user: dict, operation: str = "操作此資源"):
+    """
+    檢查資源是否屬於 current_user，
+    若不是則確認 current_user 是否具有 admin 權限，
+    否則拋出 HTTPException 。
+    
+    參數:
+      resource_owner: 此資源所屬的使用者 UID。
+      current_user: 當前驗證成功的使用者資訊。
+      operation: 動作描述，用於錯誤訊息 (預設為 "操作此資源")。
+    """
+    if resource_owner != current_user["uid"]:
+        user_doc = users_collection.document(current_user["uid"]).get()
+        if not user_doc.exists:
+            raise HTTPException(status_code=404, detail="找不到使用者資料")
+        user_data = user_doc.to_dict()
+        if user_data.get("role", "") != "admin":
+            raise HTTPException(status_code=403, detail=f"您沒有權限{operation}")
+
+
+def verify_image_permission(image_url: str, current_user: dict):
+    """
+    檢查圖片是否屬於 current_user，
+    若否則確認 current_user 是否具有 admin 權限，
+    否則拋出 HTTPException 。
+    
+    這裡透過檢查 image_url 中是否包含 current_user 的 uid 來判斷資源是否為本人所有。
+    """
+    if current_user["uid"] not in image_url:
+        user_doc = users_collection.document(current_user["uid"]).get()
+        if not user_doc.exists:
+            raise HTTPException(status_code=404, detail="找不到使用者資料")
+        user_data = user_doc.to_dict()
+        if user_data.get("role", "") != "admin":
+            logger.warning(f"使用者 {current_user['uid']} 嘗試刪除非本人圖片: {image_url}")
+            raise HTTPException(status_code=403, detail="您無權刪除此圖片")
+
+
 class LoginRequest(BaseModel):
     username: str
     password: str
+    turnstile_token: str  # 新增 turnstile token 欄位
 
 @app.post("/api/login")
-def login(request: LoginRequest):
+async def login(request: LoginRequest):
+    # 驗證 Turnstile token
+    if not await verify_turnstile_token(request.turnstile_token):
+        raise HTTPException(status_code=400, detail="人機驗證失敗")
+
     username = request.username
     password = request.password
 
@@ -137,9 +197,14 @@ def login(request: LoginRequest):
 class SignupRequest(BaseModel):
     username: str
     password: str
+    turnstile_token: str  # 新增 turnstile token 欄位
 
 @app.post("/api/signup")
-def signup(request: SignupRequest):
+async def signup(request: SignupRequest):
+    # 驗證 Turnstile token
+    if not await verify_turnstile_token(request.turnstile_token):
+        raise HTTPException(status_code=400, detail="人機驗證失敗")
+
     username = request.username
     password = request.password
 
@@ -374,25 +439,36 @@ class Article(BaseModel):
 
 # 發布新文章的端點
 @app.post("/api/articles", dependencies=[Depends(verify_token)], status_code=201)
-def create_article(article: Article):
+def create_article(article: Article, user: dict = Depends(verify_token)):
     try:
         article_dict = article.dict()
+        # 強制使用者 ID 為當前驗證成功的使用者（避免讓前端傳入任意值）
+        article_dict['user_id'] = user['uid']
         article_dict['published_at'] = datetime.datetime.utcnow()
         doc_ref = articles_collection.add(article_dict)
-        article_id = doc_ref[1].id
+        article_id = doc_ref[0].id
         return {"id": article_id, "message": "文章發布成功"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"發布文章時出錯: {e}")
 
 # 編輯現有文章的端點
 @app.put("/api/articles/{article_id}", dependencies=[Depends(verify_token)])
-def update_article(article_id: str, article: Article):
+def update_article(article_id: str, article: Article, user: dict = Depends(verify_token)):
     try:
+        # 取得文章資料
         doc_ref = articles_collection.document(article_id)
-        if not doc_ref.get().exists:
+        doc = doc_ref.get()
+        if not doc.exists:
             raise HTTPException(status_code=404, detail="找不到該文章")
+        
+        article_data = doc.to_dict()
+
+        # 先檢查是否屬於本人，否則檢查是否有 admin 權限
+        verify_owner_or_admin(article_data.get("user_id"), user, operation="修改此文章")
+        
+        # 更新文章
         article_dict = article.dict(exclude_unset=True)
-        article_dict['published_at'] = datetime.datetime.utcnow()
+        article_dict["published_at"] = datetime.datetime.utcnow()
         doc_ref.update(article_dict)
         return {"message": "文章更新成功"}
     except HTTPException as he:
@@ -430,24 +506,20 @@ def delete_article(article_id: str, user: dict = Depends(verify_token)):
         if not doc_snapshot.exists:
             raise HTTPException(status_code=404, detail="找不到該文章")
         
-        # 可選：若要確保使用者只能刪除自己的文章，可檢查文章的 user_id
         doc_data = doc_snapshot.to_dict()
-        if "user_id" in doc_data and doc_data["user_id"] is not None:
-            if doc_data["user_id"] != user.get("uid"):
-                raise HTTPException(status_code=403, detail="您無權刪除此文章")
-            
-        # 刪除文章前先刪除圖片
         
+        # 檢查文章是否屬於本人，否則需有 admin 權限才能操作
+        verify_owner_or_admin(doc_data.get("user_id"), user, operation="刪除此文章")
+        
+        # 刪除文章前，若包含圖片則先刪除圖片
         if "image_url" in doc_data and doc_data["image_url"] is not None:
-            # 將圖片網址字串封裝成 DeleteImageRequest 物件，才能正確呼叫 delete_image API
             delete_image(DeleteImageRequest(image_url=doc_data["image_url"]), user)
-
-        # 刪除文章
         
+        # 刪除文章
         doc_ref.delete()
         logger.info(f"使用者 {user['uid']} 刪除了文章 {article_id}")
         return {"message": "文章刪除成功"}
-
+        
     except Exception as e:
         logger.error(f"刪除文章時出錯: {str(e)}")
         raise HTTPException(status_code=500, detail=f"刪除文章時出錯: {str(e)}")
@@ -461,23 +533,18 @@ class DeleteImageRequest(BaseModel):
 @app.delete("/api/delete_image")
 def delete_image(request: DeleteImageRequest, user: dict = Depends(verify_token)):
     image_url = request.image_url
-    # 檢查圖片 URL 中是否包含該使用者的 UID，確保使用者只能刪除自己的圖片
-    if user["uid"] not in image_url:
-        logger.warning(f"使用者 {user['uid']} 嘗試刪除非本人圖片: {image_url}")
-        raise HTTPException(status_code=403, detail="您無權刪除此圖片")
     
-    # 根據上傳圖片時的邏輯，圖片的公開 URL 形態通常為：
-    # https://storage.googleapis.com/{bucket.name}/<blob_path>
+    # 檢查圖片權限：若圖片非本人所有，則需 admin 權限
+    verify_image_permission(image_url, user)
+    
     bucket_url_prefix = f"https://storage.googleapis.com/{bucket.name}/"
     if not image_url.startswith(bucket_url_prefix):
         logger.error(f"圖片 URL 格式錯誤: {image_url}")
         raise HTTPException(status_code=400, detail="圖片 URL 格式錯誤")
     
-    # 取得 blob 的相對路徑
+    # 取得 blob 的相對路徑，並進行 percent decode
     blob_name = image_url.replace(bucket_url_prefix, "")
-    # percent decode
-    blob_name = urllib.parse.unquote(blob_name) 
-    # 刪除 blob
+    blob_name = urllib.parse.unquote(blob_name)
     try:
         blob = bucket.blob(blob_name)
         blob.delete()
@@ -485,7 +552,6 @@ def delete_image(request: DeleteImageRequest, user: dict = Depends(verify_token)
         logger.info(f"使用者 {user['uid']} 成功刪除了圖片: {image_url}")
         return {"message": "圖片刪除成功"}
     except Exception as e:
-        # 如果錯誤訊息中包含「No such object」，視為檔案不存在，進而忽略該錯誤
         if "No such object" in str(e):
             logger.warning(f"圖片不存在，無需刪除: {image_url}")
             return {"message": "圖片不存在，視為已刪除"}
@@ -597,3 +663,87 @@ def create_user(user: dict = Depends(verify_token)):
     except Exception as e:
         logger.error(f"建立用戶時出錯: {e}")
         raise HTTPException(status_code=500, detail=f"建立用戶時出錯: {str(e)}")
+
+# Admin 權限檢查輔助函數
+async def check_admin_permission(user: dict) -> bool:
+    try:
+        user_doc = users_collection.document(user['uid']).get()
+        if not user_doc.exists:
+            raise HTTPException(status_code=404, detail="找不到使用者資料")
+        
+        user_data = user_doc.to_dict()
+        if user_data.get('role') != 'admin':
+            raise HTTPException(
+                status_code=403,
+                detail="需要管理員權限"
+            )
+        return True
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"檢查管理員權限時出錯：{str(e)}")
+
+# Admin API：取得所有使用者的聊天記錄
+@app.get("/api/admin/chat_histories")
+async def get_all_chat_histories(user: dict = Depends(verify_token)):
+    await check_admin_permission(user)
+    try:
+        chat_histories = []
+        # 獲取所有聊天記錄
+        chat_docs = db.collection('chat_histories').stream()
+        
+        for doc in chat_docs:
+            chat_history = doc.to_dict()
+            chat_history['user_id'] = doc.id  # 添加使用者 ID
+            chat_histories.append(chat_history)
+            
+        return {"chat_histories": chat_histories}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"獲取所有聊天記錄時出錯：{str(e)}")
+
+# Admin API：取得所有使用者資料
+@app.get("/api/admin/users")
+async def get_all_users(user: dict = Depends(verify_token)):
+    await check_admin_permission(user)
+    try:
+        users = []
+        # 獲取所有使用者資料
+        user_docs = users_collection.stream()
+        
+        for doc in user_docs:
+            user_data = doc.to_dict()
+            user_data['uid'] = doc.id  # 添加使用者 ID
+            users.append(user_data)
+            
+        return {"users": users}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"獲取所有使用者資料時出錯：{str(e)}")
+
+# Admin API：設定其他使用者的角色
+@app.put("/api/admin/users/{target_uid}/role")
+async def set_user_role_by_admin(
+    target_uid: str,
+    request: RoleRequest,
+    current_user: dict = Depends(verify_token)
+):
+    await check_admin_permission(current_user)
+    try:
+        # 檢查目標使用者是否存在
+        target_user_doc = users_collection.document(target_uid).get()
+        if not target_user_doc.exists:
+            raise HTTPException(status_code=404, detail="找不到目標使用者")
+        
+        # 防止管理員移除自己的權限
+        if target_uid == current_user['uid'] and request.role != 'admin':
+            raise HTTPException(
+                status_code=403,
+                detail="管理員不能移除自己的管理員權限"
+            )
+        
+        # 更新使用者角色
+        users_collection.document(target_uid).update({"role": request.role})
+        return {"message": f"使用者 {target_uid} 的角色已更新為 {request.role}"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"更新使用者角色時出錯：{str(e)}")

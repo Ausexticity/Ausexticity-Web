@@ -13,5 +13,6 @@ python-dotenv
 python-multipart
 openai
 sse-starlette
+aiohttp
 
 # 其他依賴

@@ -1,0 +1,372 @@
+.admin-actions {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.admin-btn {
+    background-color: #954527;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
+    box-shadow: 0 4px 6px rgba(149, 69, 39, 0.2);
+}
+
+.admin-btn:hover {
+    background-color: #E06609;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(224, 102, 9, 0.3);
+}
+
+.table-container {
+    overflow-x: auto;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: inset 0 0 10px rgba(21, 47, 43, 0.2);
+}
+
+#users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#users-table th,
+#users-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #E0D5C1;
+    color: #152F2B;
+}
+
+#users-table th {
+    background-color: #F8E0BC;
+    font-weight: bold;
+    color: #152F2B;
+}
+
+#users-table tr:hover {
+    background-color: rgba(241, 227, 203, 0.3);
+}
+
+.role-select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 2px solid #E0D5C1;
+    background-color: #fff;
+    color: #152F2B;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23954527' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 32px;
+}
+
+.role-select:hover {
+    border-color: #954527;
+    background-color: #FFF9F2;
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: #954527;
+    box-shadow: 0 0 0 3px rgba(149, 69, 39, 0.1);
+    background-color: #FFF9F2;
+}
+
+/* 下拉選單選項樣式 */
+select.role-select option {
+    padding: 12px;
+    background-color: #FFFFFF !important;
+    color: #152F2B !important;
+    border: none;
+    font-size: 14px;
+}
+
+/* 選項懸停時的樣式 */
+select.role-select option:hover {
+    background: #F1E3CB !important;
+    background-color: #F1E3CB !important;
+    color: #152F2B !important;
+    box-shadow: 0 0 10px 100px #F1E3CB inset !important;
+    -webkit-text-fill-color: #152F2B !important;
+}
+
+/* 修正 Firefox 特定的樣式 */
+@-moz-document url-prefix() {
+    select.role-select {
+        color: #152F2B;
+        background-color: #FFFFFF;
+    }
+
+    select.role-select option {
+        background-color: #FFFFFF !important;
+        color: #152F2B !important;
+    }
+
+    select.role-select option:hover {
+        background-color: #F1E3CB !important;
+        color: #152F2B !important;
+        box-shadow: 0 0 10px 100px #F1E3CB inset !important;
+    }
+
+}
+
+/* 修正 Safari 特定的樣式 */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    select.role-select {
+        border-radius: 8px;
+    }
+
+    select.role-select option {
+        padding: 12px;
+    }
+}
+
+.chat-history-btn {
+    padding: 8px 16px;
+    background-color: #E06609;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.chat-history-btn:hover {
+    background-color: #954527;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(149, 69, 39, 0.2);
+}
+
+/* 模態框樣式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(21, 47, 43, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: #F8F9FA;
+    margin: 2% auto;
+    padding: 0;
+    border: none;
+    width: 95%;
+    max-width: 600px;
+    border-radius: 20px;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(21, 47, 43, 0.15);
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.close {
+    position: absolute;
+    right: 15px;
+    top: 12px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #954527;
+    transition: all 0.3s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(149, 69, 39, 0.1);
+    z-index: 2;
+}
+
+.close:hover {
+    color: #E06609;
+    transform: rotate(90deg);
+    background-color: rgba(224, 102, 9, 0.15);
+}
+
+#chat-history-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-entry {
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.chat-entry .timestamp {
+    font-size: 0.8em;
+    color: #888;
+    text-align: center;
+    margin: 8px 0;
+    position: sticky;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 5px;
+    z-index: 1;
+}
+
+.chat-entry .message {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 8px;
+    position: relative;
+    margin: 3px 0;
+    word-wrap: break-word;
+}
+
+.chat-entry .message p {
+    margin: 0;
+    line-height: 1.5;
+    font-size: 0.95em;
+}
+
+.chat-entry .user-message {
+    background-color: #F1E3CB;
+    color: #152F2B;
+    float: right;
+    clear: both;
+}
+
+.chat-entry .ai-message {
+    background-color: #954527;
+    color: #fff;
+    float: left;
+    clear: both;
+}
+
+/* 移除原有的氣泡尾巴 */
+.chat-entry .user-message::before,
+.chat-entry .ai-message::after {
+    display: none;
+}
+
+/* 清除浮動 */
+.chat-entry::after {
+    content: '';
+    display: table;
+    clear: both;
+}
+
+/* 自定義滾動條 */
+#chat-history-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chat-history-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#chat-history-content::-webkit-scrollbar-thumb {
+    background: rgba(149, 69, 39, 0.2);
+    border-radius: 3px;
+}
+
+#chat-history-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(149, 69, 39, 0.3);
+}
+
+/* 響應式設計 */
+@media all and (max-width: 768px) {
+    .admin-actions {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .admin-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .chat-entry .message {
+        max-width: 85%;
+    }
+
+    .close {
+        top: 10px;
+        right: 10px;
+    }
+
+    #users-table th,
+    #users-table td {
+        padding: 12px 10px;
+        font-size: 14px;
+    }
+
+    .role-select {
+        width: 90px;
+        padding: 6px 28px 6px 10px;
+        background-position: right 6px center;
+    }
+
+    .chat-history-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+}
+
+@media all and (max-width: 480px) {
+    .chat-entry {
+        margin-bottom: 10px;
+    }
+
+    .chat-entry .message {
+        padding: 6px 10px;
+    }
+
+    .chat-entry .message p {
+        font-size: 0.9em;
+    }
+
+    #users-table th,
+    #users-table td {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+
+    .role-select {
+        width: 80px;
+        padding: 5px 24px 5px 8px;
+        font-size: 13px;
+        background-position: right 4px center;
+    }
+
+    .chat-history-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+}

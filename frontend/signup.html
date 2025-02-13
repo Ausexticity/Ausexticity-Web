@@ -12,8 +12,9 @@
     <link rel="manifest" href="images/favicon/site.webmanifest">
     <link rel="shortcut icon" href="images/favicon/favicon.ico">
     <meta name="theme-color" content="#ffffff">
-    <link rel="stylesheet" href="css/main.css?ver=2023102401">
-</head>
+    <link rel="stylesheet" href="css/main.css?ver=2023102401" </head>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" async
+        defer></script>
 
 <body class="body-brown">
     <header>
@@ -46,6 +47,10 @@
                             </div>
                             <div class="item">
                                 <input type="password" id="password_confirm" placeholder="確認密碼" required>
+                            </div>
+                            <div class="item">
+                                <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8qbRAgk8m0WEst" data-size="flexible">
+                                </div>
                             </div>
                             <div class="item action">
                                 <button id="sign-up-btn">註冊</button>

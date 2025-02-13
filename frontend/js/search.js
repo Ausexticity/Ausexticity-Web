@@ -1,6 +1,7 @@
 import { API_BASE_URL } from './config.js';
 import { fetchArticles, formatPublishedDate, updateHeader, deleteArticle } from './misc.js';
 import { initializeLoading, showLoading, hideLoading } from './loading.js';
+import { getCurrentUserId } from './auth.js';
 
 // 搜尋功能實現
 document.addEventListener('DOMContentLoaded', async () => {
@@ -21,13 +22,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userId = urlParams.get('userId');
         const edit = urlParams.get('edit');
 
-        if (userId) {
+        if (edit === 'true') {
+            const currentUserId = await getCurrentUserId();
+            if (currentUserId) {
+                if (userId) {
+                    // 如果指定了 userId，只顯示該用戶的文章
+                    searchHeading.innerHTML = '我的文章';
+                    await displayUserArticles(userId);
+                } else {
+                    // 如果沒有指定 userId，顯示所有文章
+                    searchHeading.innerHTML = '所有文章';
+                    await displayAllArticles(true);
+                }
+            } else {
+                window.location.href = 'login.html';
+                return;
+            }
+        } else if (userId) {
             searchHeading.innerHTML = '我的文章';
-            displayUserArticles(userId);
+            await displayUserArticles(userId);
         } else if (query) {
-            performSearch(query);
+            await performSearch(query);
         } else {
-            displayAllArticles();
+            await displayAllArticles();
         }
 
         // 暴露 performSearch 供外部（如 nav-search.js）調用
@@ -37,8 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const articles = await fetchArticles();
                 const userArticles = articles.filter(article => article.user_id === userId);
-
-                displayResults(userArticles, '');
+                displayResults(userArticles, '', true);
             } catch (error) {
                 console.error('載入用戶文章失敗:', error);
                 showErrorMessage('載入文章失敗，請稍後再試。');
@@ -75,21 +91,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // 顯示所有文章的函數
-        async function displayAllArticles() {
+        async function displayAllArticles(isEditMode = false) {
             try {
                 const articles = await fetchArticles();
                 // 根據發布時間排序（從新到舊）
                 const sortedArticles = articles.sort((a, b) => {
                     return new Date(b.published_at) - new Date(a.published_at);
                 });
-                displayResults(sortedArticles, '');
+                displayResults(sortedArticles, '', isEditMode);
             } catch (error) {
                 console.error('獲取文章失敗:', error);
             }
         }
 
         // 顯示搜尋結果
-        function displayResults(results, keyword) {
+        function displayResults(results, keyword, isEditMode = false) {
             searchResults.innerHTML = '';
 
             if (results.length === 0) {
@@ -134,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 titleWrapper.appendChild(titleElement);
 
                 // 如果在編輯模式下，添加編輯和刪除按鈕到標題旁邊
-                if (edit) {
+                if (isEditMode) {
                     const actionDiv = document.createElement('div');
                     actionDiv.className = 'article-actions';
 
@@ -157,7 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             await deleteArticle(article.id);
                             // 重新載入文章列表
                             await fetchArticles(true);
-                            window.location.href = 'search.html?userId=' + userId + '&edit=true';
+                            window.location.href = 'search.html?edit=true';
                         }
                     });
 

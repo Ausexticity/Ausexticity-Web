@@ -13,6 +13,7 @@
     <link rel="shortcut icon" href="images/favicon/favicon.ico">
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 
 <body class="body-admin">
@@ -33,15 +34,40 @@
             <div class="outer-div">
                 <h2>管理後台</h2>
                 <div class="admin-actions">
-                    <button id="btn-navigate-post">新增文章</button>
-                    <button id="btn-navigate-edit">編輯文章</button>
+                    <button id="btn-navigate-post" class="admin-btn">新增文章</button>
+                    <button id="btn-navigate-edit" class="admin-btn">修改文章</button>
                 </div>
                 <div class="admin-content">
-                    <!-- 這裡可以顯示文章列表或其他管理內容 -->
+                    <div class="table-container">
+                        <table id="users-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Chat History</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- 用戶數據將通過 JavaScript 動態插入 -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- 聊天記錄模態框 -->
+    <div id="chat-history-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="chat-history-content">
+                <!-- 聊天記錄將通過 JavaScript 動態插入 -->
+            </div>
+        </div>
+    </div>
 
     <script src="js/jquery.min.js"></script>
     <script type="module" src="js/admin.js"></script>

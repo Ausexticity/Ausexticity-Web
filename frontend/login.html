@@ -13,8 +13,8 @@
     <link rel="shortcut icon" href="images/favicon/favicon.ico">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" async
+        defer></script>
 </head>
 
 <body class="body-detail body-brown">
@@ -46,6 +46,10 @@
                             </div>
                             <div class="item forgot">
                                 <a href="forgot_password.html">忘記密碼</a>
+                            </div>
+                            <div class="item">
+                                <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8qbRAgk8m0WEst" data-size="flexible">
+                                </div>
                             </div>
                             <div class="item action">
                                 <button id="login-btn">登入</button>

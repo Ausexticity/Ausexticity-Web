@@ -19,6 +19,7 @@ import {
     EmailAuthProvider
 } from 'https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js';
 
+
 const firebaseConfig = {
     apiKey: "AIzaSyCUhBo3u0fY0yTFZomxyenFtuTAWSL8UKA",
     authDomain: "eros-web-94e22.firebaseapp.com",
@@ -61,11 +62,21 @@ function getCurrentUserId() {
 // 電子郵件/密碼註冊
 async function signup(email, password) {
     try {
+        // 獲取 Turnstile token
+        const token = turnstile.getResponse();
+        if (!token) {
+            alert('請完成人機驗證');
+            return false;
+        }
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
         // 發送電子郵件驗證
         await sendEmailVerification(user);
+
+        // 重置 Turnstile
+        turnstile.reset();
 
         alert('註冊成功！請查收驗證電子郵件。');
         return true;
@@ -96,6 +107,13 @@ async function signup(email, password) {
 // 電子郵件/密碼登入
 async function login(email, password) {
     try {
+        // 獲取 Turnstile token
+        const token = turnstile.getResponse();
+        if (!token) {
+            alert('請完成人機驗證');
+            return false;
+        }
+
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
@@ -107,6 +125,9 @@ async function login(email, password) {
             throw new Error('請先驗證您的電子郵件。已重新發送驗證郵件，請查收。');
         }
 
+        // 重置 Turnstile
+        turnstile.reset();
+
         return true;
     } catch (error) {
         console.error('登入時發生錯誤:', error);
@@ -116,6 +137,9 @@ async function login(email, password) {
             errorMessage = error.message;
         } else {
             switch (error.code) {
+                case 'auth/too-many-requests':
+                    errorMessage = '嘗試登入次數過多，請稍後再試。';
+                    break;
                 case 'auth/invalid-email':
                     errorMessage = '無效的電子郵件格式';
                     break;
