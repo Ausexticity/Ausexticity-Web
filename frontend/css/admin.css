@@ -281,15 +281,15 @@ select.role-select option:hover {
 }
 
 .chat-entry .user-message {
-    background-color: #F1E3CB;
-    color: #152F2B;
+    background-color: #954527;
+    color: #fff !important;
     float: right;
     clear: both;
 }
 
 .chat-entry .ai-message {
-    background-color: #954527;
-    color: #fff;
+    background-color: #F1E3CB;
+    color: #152F2B !important;
     float: left;
     clear: both;
 }
@@ -357,7 +357,7 @@ select.role-select option:hover {
 
 /* 針對深色背景的 AI 訊息調整樣式 */
 .ai-message .markdown-content {
-    color: #fff;
+    color: #152F2B !important;
 }
 
 .ai-message .markdown-content code {
@@ -370,7 +370,7 @@ select.role-select option:hover {
 
 .ai-message .markdown-content ul,
 .ai-message .markdown-content ol {
-    color: #fff;
+    color: #152F2B !important;
 }
 
 .ai-message .markdown-content ul {
