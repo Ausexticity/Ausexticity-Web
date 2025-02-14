@@ -14,5 +14,6 @@ python-multipart
 openai
 sse-starlette
 aiohttp
+google-auth
 
 # 其他依賴

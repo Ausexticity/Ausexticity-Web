@@ -40,7 +40,8 @@ origins = [
     "https://ausexticity-frontend.onrender.com",  # 前端生產環境
     "https://www.ausexticity.com",
     "https://ausexticity.com",
-    "https://ausexticity-web-api.onrender.com"  # API 服務器
+    "https://ausexticity-web-api.onrender.com",  # API 服務器
+    "https://eros-backend-535836798504.asia-east1.run.app"  # Cloud Run URL
 ]
 
 app.add_middleware(
@@ -52,7 +53,7 @@ app.add_middleware(
 )
 
 # 初始化 Firebase Admin SDK
-cred = credentials.Certificate("credential.json")
+cred = credentials.Certificate(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))
 firebase_admin.initialize_app(cred, {
     'storageBucket': 'eros-web-94e22.firebasestorage.app'  # 移除了 'gs://'
 })
@@ -444,9 +445,10 @@ def create_article(article: Article, user: dict = Depends(verify_token)):
         article_dict = article.dict()
         # 強制使用者 ID 為當前驗證成功的使用者（避免讓前端傳入任意值）
         article_dict['user_id'] = user['uid']
-        article_dict['published_at'] = datetime.datetime.utcnow()
+        # 將 datetime 轉換為 Firestore 的 SERVER_TIMESTAMP
+        article_dict['published_at'] = firestore.SERVER_TIMESTAMP
         doc_ref = articles_collection.add(article_dict)
-        article_id = doc_ref[0].id
+        article_id = doc_ref[1].id
         return {"id": article_id, "message": "文章發布成功"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"發布文章時出錯: {e}")
