@@ -6,6 +6,9 @@ const ARTICLES_KEY = 'articles';
 const ARTICLES_TIMESTAMP_KEY = 'articles_timestamp';
 const CACHE_DURATION = 60 * 60 * 1000; // 1 小時
 
+// 定義滾動條狀態的 LocalStorage 鍵名前綴
+const SCROLL_STATE_PREFIX = 'scroll_state_';
+
 async function updateHeader() {
     const userIsLoggedIn = await isLoggedIn();
     const loginLink = document.getElementById('login-link');
@@ -178,9 +181,85 @@ function truncateTitle(text, maxLength = 20) {
     return cleanText.length > maxLength ? cleanText.substring(0, maxLength) + '...' : cleanText;
 }
 
+/**
+ * 儲存頁面的滾動條位置
+ */
+function saveScrollPosition() {
+    const currentPath = window.location.pathname;
+    const scrollPosition = window.scrollY;
+    localStorage.setItem(SCROLL_STATE_PREFIX + currentPath, scrollPosition.toString());
+}
+
+/**
+ * 恢復頁面的滾動條位置
+ * @param {boolean} waitForDynamicContent - 是否等待動態內容載入
+ */
+function restoreScrollPosition(waitForDynamicContent = false) {
+    const currentPath = window.location.pathname;
+    const savedPosition = localStorage.getItem(SCROLL_STATE_PREFIX + currentPath);
+
+    if (savedPosition !== null) {
+        if (waitForDynamicContent) {
+            // 使用 MutationObserver 監聽內容變化
+            const observer = new MutationObserver((mutations, obs) => {
+                const targetElement = document.querySelector('.search-result-lists, .article-content');
+                if (targetElement && targetElement.children.length > 0) {
+                    // 當內容載入完成後，設置滾動位置
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: parseInt(savedPosition),
+                            behavior: 'instant'
+                        });
+                    }, 100);
+                    obs.disconnect(); // 停止觀察
+                }
+            });
+
+            // 開始觀察文檔變化
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+
+            // 設置超時，避免無限等待
+            setTimeout(() => {
+                observer.disconnect();
+            }, 5000); // 5 秒後停止觀察
+        } else {
+            // 對於靜態內容，直接設置滾動位置
+            setTimeout(() => {
+                window.scrollTo({
+                    top: parseInt(savedPosition),
+                    behavior: 'instant'
+                });
+            }, 100);
+        }
+    }
+}
+
+// 監聽滾動事件，使用節流函數來優化性能
+let scrollTimeout;
+window.addEventListener('scroll', () => {
+    if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+    }
+    scrollTimeout = setTimeout(saveScrollPosition, 100);
+});
+
+// 在頁面卸載前保存最後的滾動位置
+window.addEventListener('beforeunload', () => {
+    saveScrollPosition();
+});
+
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
     scheduleArticleUpdate();
+    // 根據頁面路徑決定是否等待動態內容
+    const currentPath = window.location.pathname;
+    const waitForDynamic = currentPath.includes('search.html') ||
+        currentPath.includes('article_detail.html') ||
+        currentPath.includes('admin.html');
+    restoreScrollPosition(waitForDynamic);
 });
 
 /**
