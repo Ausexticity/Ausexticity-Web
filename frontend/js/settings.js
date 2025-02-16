@@ -114,7 +114,7 @@ async function handleAvatarUpload(event) {
         formData.append('image', compressedFile);
 
         const idToken = await auth.currentUser.getIdToken();
-        const uploadResponse = await fetch(`${API_BASE_URL}/api/upload_image`, {
+        const uploadResponse = await fetch(`${API_BASE_URL}/upload_image`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${idToken}`

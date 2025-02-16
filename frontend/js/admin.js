@@ -27,7 +27,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 快取有效期為 5 分鐘
 // 取得所有使用者資料的 API
 async function getAllUsers() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
+        const response = await fetch(`${API_BASE_URL}/admin/users`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('idToken')}`
@@ -61,7 +61,7 @@ async function getAllChatHistories(forceRefresh = false) {
         }
 
         console.log('重新獲取聊天記錄');
-        const response = await fetch(`${API_BASE_URL}/api/admin/chat_histories`, {
+        const response = await fetch(`${API_BASE_URL}/admin/chat_histories`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('idToken')}`
@@ -94,7 +94,7 @@ function clearChatHistoriesCache() {
 // 更新使用者角色的 API
 async function updateUserRole(userId, newRole) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/role`, {
+        const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('idToken')}`,

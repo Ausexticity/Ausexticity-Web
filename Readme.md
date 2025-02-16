@@ -111,14 +111,14 @@ Ausexticity/
 
 ## API 文檔
 主要 API 端點：
-- POST /api/login - 用戶登入
-- POST /api/signup - 用戶註冊
-- GET /api/articles - 獲取文章列表
-- POST /api/articles - 發布新文章
-- PUT /api/articles/{id} - 更新文章
-- POST /api/upload_image - 上傳圖片
-- POST /api/chat - AI 對話
-- GET /api/chat/history - 獲取對話歷史
+- POST /login - 用戶登入
+- POST /signup - 用戶註冊
+- GET /articles - 獲取文章列表
+- POST /articles - 發布新文章
+- PUT /articles/{id} - 更新文章
+- POST /upload_image - 上傳圖片
+- POST /chat - AI 對話
+- GET /chat/history - 獲取對話歷史
 
 ## 設計規範
 

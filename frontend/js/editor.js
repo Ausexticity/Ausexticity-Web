@@ -164,7 +164,7 @@ export async function submitArticle() {
             category
         };
 
-        const response = await fetch(`${API_BASE_URL}/api/articles`, {
+        const response = await fetch(`${API_BASE_URL}/articles`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -242,7 +242,7 @@ export async function updateArticle() {
             category
         };
 
-        const response = await fetch(`${API_BASE_URL}/api/articles/${articleId}`, {
+        const response = await fetch(`${API_BASE_URL}/articles/${articleId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

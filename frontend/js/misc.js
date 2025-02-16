@@ -102,7 +102,7 @@ async function fetchArticles(force = false) {
     // 建立新的請求 Promise
     currentArticlesPromise = (async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/articles`, {
+            const response = await fetch(`${API_BASE_URL}/articles`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -276,7 +276,7 @@ export async function uploadImage(file) {
     formData.append('image', file);
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/upload_image`, {
+        const response = await fetch(`${API_BASE_URL}/upload_image`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
@@ -349,7 +349,7 @@ export async function deleteImage(imageUrl) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/delete_image`, {
+        const response = await fetch(`${API_BASE_URL}/delete_image`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -374,13 +374,13 @@ export async function deleteImage(imageUrl) {
 /**
  * 刪除文章 
  * @param {string} articleId - 要刪除的文章 ID
- * @app.delete("/api/articles/{article_id}")
+ * @app.delete("/articles/{article_id}")
 def delete_article(article_id: str, user: dict = Depends(verify_token)):    
  * 
  */
 export async function deleteArticle(articleId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/articles/${articleId}`, {
+        const response = await fetch(`${API_BASE_URL}/articles/${articleId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('idToken')}`
@@ -466,7 +466,7 @@ export async function updateUserAvatar(imageUrl) {
         if (!user) return false;
 
         const idToken = await user.getIdToken();
-        const avatarResponse = await fetch(`${API_BASE_URL}/api/user/avatar`, {
+        const avatarResponse = await fetch(`${API_BASE_URL}/user/avatar`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${idToken}`,
@@ -506,7 +506,7 @@ async function getUserAvatar() {
         if (!user) return { avatar: null };
 
         const idToken = await user.getIdToken();
-        const response = await fetch(`${API_BASE_URL}/api/user/avatar`, {
+        const response = await fetch(`${API_BASE_URL}/user/avatar`, {
             headers: {
                 'Authorization': `Bearer ${idToken}`
             }
@@ -526,7 +526,7 @@ async function getUserAvatar() {
 async function clearChatHistory() {
     try {
         const idToken = await auth.currentUser.getIdToken();
-        const response = await fetch(`${API_BASE_URL}/api/chat/history`, {
+        const response = await fetch(`${API_BASE_URL}/chat/history`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${idToken}`
@@ -544,7 +544,7 @@ async function clearChatHistory() {
 // 取得用戶 role 
 async function getUserRole() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/user/role`, {
+        const response = await fetch(`${API_BASE_URL}/user/role`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('idToken')}`
@@ -562,7 +562,7 @@ async function getUserRole() {
 // 更新用戶 role 
 async function updateUserRole(role = 'user') {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/user/role`, {
+        const response = await fetch(`${API_BASE_URL}/user/role`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('idToken')}`
@@ -582,7 +582,7 @@ async function updateUserRole(role = 'user') {
 async function createUser() {
     try {
         const idToken = await auth.currentUser.getIdToken();
-        const response = await fetch(`${API_BASE_URL}/api/user/create`, {
+        const response = await fetch(`${API_BASE_URL}/user/create`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${idToken}`

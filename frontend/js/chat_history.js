@@ -41,7 +41,7 @@ class ChatHistoryManager {
 
         try {
             console.log('同步到雲端的訊息:', message);
-            const response = await fetch(`${API_BASE_URL}/api/chat/history`, {
+            const response = await fetch(`${API_BASE_URL}/chat/history`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ class ChatHistoryManager {
         if (!idToken) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/chat/history`, {
+            const response = await fetch(`${API_BASE_URL}/chat/history`, {
                 headers: {
                     'Authorization': `Bearer ${idToken}`
                 }

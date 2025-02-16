@@ -610,7 +610,7 @@ def delete_chat_history(user: dict = Depends(verify_token)):
 
 # 新增使用者頭像相關 API
 class AvatarRequest(BaseModel):
-    avatar: str  # 使用上傳圖片 /api/upload_image 回傳的圖片 URL
+    avatar: str  # 使用上傳圖片 /upload_image 回傳的圖片 URL
 
 @app.get("/user/avatar")
 def get_user_avatar(user: dict = Depends(verify_token)):
