@@ -33,15 +33,12 @@ logger = logging.getLogger('uvicorn.error')
 
 # 設定 CORS 允許的來源
 origins = [
-    "http://127.0.0.1:5500",  # 前端開發伺服器
-    "http://127.0.0.1:5173",  # 前端開發伺服器
-    "http://localhost:5173",   # 新增：本地開發伺服器
-    "http://localhost:5500",   # 新增：本地開發伺服器
-    "https://ausexticity-frontend.onrender.com",  # 前端生產環境
+    # "http://127.0.0.1:5500",  # 前端開發伺服器
+    # "http://127.0.0.1:5173",  # 前端開發伺服器
+    # "http://localhost:5173",   # 新增：本地開發伺服器
+    # "http://localhost:5500",   # 新增：本地開發伺服器
+    # "https://ausexticity-frontend.onrender.com",  # 前端生產環境
     "https://www.ausexticity.com",
-    "https://ausexticity.com",
-    "https://ausexticity-web-api.onrender.com",  # API 服務器
-    "https://eros-backend-535836798504.asia-east1.run.app"  # Cloud Run URL
 ]
 
 app.add_middleware(
@@ -53,7 +50,8 @@ app.add_middleware(
 )
 
 # 初始化 Firebase Admin SDK
-cred = credentials.Certificate(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))
+cred_dict = json.loads(os.getenv('GOOGLE_CREDENTIALS'))
+cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred, {
     'storageBucket': 'eros-web-94e22.firebasestorage.app'  # 移除了 'gs://'
 })
@@ -166,7 +164,7 @@ class LoginRequest(BaseModel):
     password: str
     turnstile_token: str  # 新增 turnstile token 欄位
 
-@app.post("/api/login")
+@app.post("/login")
 async def login(request: LoginRequest):
     # 驗證 Turnstile token
     if not await verify_turnstile_token(request.turnstile_token):
@@ -200,7 +198,7 @@ class SignupRequest(BaseModel):
     password: str
     turnstile_token: str  # 新增 turnstile token 欄位
 
-@app.post("/api/signup")
+@app.post("/signup")
 async def signup(request: SignupRequest):
     # 驗證 Turnstile token
     if not await verify_turnstile_token(request.turnstile_token):
@@ -230,7 +228,7 @@ async def signup(request: SignupRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"生成令牌時出錯:{e}")
 
-@app.get("/api/articles")
+@app.get("/articles")
 def get_articles(user_id: Optional[str] = None):
     try:
         if user_id:
@@ -254,7 +252,7 @@ class ChatRequest(BaseModel):
     web_search: bool = False  # 是否啟用網路搜尋功能
     rag: bool = False       # 是否啟用 RAG 資料庫查詢
 
-@app.get("/api/chat")
+@app.get("/chat")
 async def chat(
     request: Request,
     query: str,  # 從 query parameters 獲取查詢字串
@@ -386,7 +384,7 @@ class ChatMessage(BaseModel):
     is_bot: bool
     timestamp: datetime.datetime
 
-@app.post("/api/chat/history")
+@app.post("/chat/history")
 def save_chat_history(message: ChatMessage, user: dict = Depends(verify_token)):
     try:
         logger.info(f"保存聊天記錄，使用者 UID: {user['uid']}")
@@ -414,7 +412,7 @@ def save_chat_history(message: ChatMessage, user: dict = Depends(verify_token)):
         logger.error(f"儲存聊天記錄時出錯：{str(e)}")
         raise HTTPException(status_code=500, detail=f"儲存聊天記錄時出錯：{str(e)}")
 
-@app.get("/api/chat/history")
+@app.get("/chat/history")
 def get_chat_history(user: dict = Depends(verify_token)):
     try:
         chat_history_ref = db.collection('chat_histories').document(user['uid'])
@@ -439,7 +437,7 @@ class Article(BaseModel):
     
 
 # 發布新文章的端點
-@app.post("/api/articles", dependencies=[Depends(verify_token)], status_code=201)
+@app.post("/articles", dependencies=[Depends(verify_token)], status_code=201)
 def create_article(article: Article, user: dict = Depends(verify_token)):
     try:
         article_dict = article.dict()
@@ -454,7 +452,7 @@ def create_article(article: Article, user: dict = Depends(verify_token)):
         raise HTTPException(status_code=500, detail=f"發布文章時出錯: {e}")
 
 # 編輯現有文章的端點
-@app.put("/api/articles/{article_id}", dependencies=[Depends(verify_token)])
+@app.put("/articles/{article_id}", dependencies=[Depends(verify_token)])
 def update_article(article_id: str, article: Article, user: dict = Depends(verify_token)):
     try:
         # 取得文章資料
@@ -478,7 +476,7 @@ def update_article(article_id: str, article: Article, user: dict = Depends(verif
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"更新文章時出錯: {e}")
 
-@app.post("/api/upload_image")
+@app.post("/upload_image")
 async def upload_image(image: UploadFile = File(...), user: dict = Depends(verify_token)):
     if not image.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="請上傳有效的圖片檔案。")
@@ -499,7 +497,7 @@ async def upload_image(image: UploadFile = File(...), user: dict = Depends(verif
         raise HTTPException(status_code=500, detail="上傳圖片時發生錯誤。")
 
 # 刪除文章 API
-@app.delete("/api/articles/{article_id}")
+@app.delete("/articles/{article_id}")
 def delete_article(article_id: str, user: dict = Depends(verify_token)):
     try:
         doc_ref = articles_collection.document(article_id)
@@ -534,7 +532,7 @@ def delete_article(article_id: str, user: dict = Depends(verify_token)):
 class DeleteImageRequest(BaseModel):
     image_url: str
 
-@app.delete("/api/delete_image")
+@app.delete("/delete_image")
 def delete_image(request: DeleteImageRequest, user: dict = Depends(verify_token)):
     image_url = request.image_url
     
@@ -567,7 +565,7 @@ def delete_image(request: DeleteImageRequest, user: dict = Depends(verify_token)
 class RoleRequest(BaseModel):
     role: str
 
-@app.get("/api/user/role")
+@app.get("/user/role")
 def get_user_role(user: dict = Depends(verify_token)):
     """
     取得當前使用者的角色
@@ -583,7 +581,7 @@ def get_user_role(user: dict = Depends(verify_token)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"取得使用者角色時出錯：{str(e)}")
 
-@app.post("/api/user/role")
+@app.post("/user/role")
 def set_user_role(request: RoleRequest, user: dict = Depends(verify_token)):
     """
     更新當前使用者的角色
@@ -597,7 +595,7 @@ def set_user_role(request: RoleRequest, user: dict = Depends(verify_token)):
 
 
 # 新增刪除聊天紀錄 API
-@app.delete("/api/chat/history")
+@app.delete("/chat/history")
 def delete_chat_history(user: dict = Depends(verify_token)):
     """
     刪除當前使用者的聊天紀錄
@@ -614,7 +612,7 @@ def delete_chat_history(user: dict = Depends(verify_token)):
 class AvatarRequest(BaseModel):
     avatar: str  # 使用上傳圖片 /api/upload_image 回傳的圖片 URL
 
-@app.get("/api/user/avatar")
+@app.get("/user/avatar")
 def get_user_avatar(user: dict = Depends(verify_token)):
     """
     取得當前使用者的頭像 URL
@@ -629,11 +627,11 @@ def get_user_avatar(user: dict = Depends(verify_token)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"取得頭像時出錯：{str(e)}")
 
-@app.post("/api/user/avatar")
+@app.post("/user/avatar")
 def set_user_avatar(request: AvatarRequest, user: dict = Depends(verify_token)):
     """
     更新當前使用者的頭像 URL
-    注意：上傳圖片請使用已實作的 /api/upload_image，獲取圖片公開 URL 後，再透過此 API 更新頭像。
+    注意：上傳圖片請使用已實作的 /upload_image，獲取圖片公開 URL 後，再透過此 API 更新頭像。
     """
     try:
         users_collection.document(user['uid']).update({"avatar": request.avatar})
@@ -641,7 +639,7 @@ def set_user_avatar(request: AvatarRequest, user: dict = Depends(verify_token)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"更新頭像時出錯：{str(e)}")
 
-@app.post("/api/user/create")
+@app.post("/user/create")
 def create_user(user: dict = Depends(verify_token)):
     """
     創造用戶文件 API
@@ -688,7 +686,7 @@ async def check_admin_permission(user: dict) -> bool:
         raise HTTPException(status_code=500, detail=f"檢查管理員權限時出錯：{str(e)}")
 
 # Admin API：取得所有使用者的聊天記錄
-@app.get("/api/admin/chat_histories")
+@app.get("/admin/chat_histories")
 async def get_all_chat_histories(user: dict = Depends(verify_token)):
     await check_admin_permission(user)
     try:
@@ -706,7 +704,7 @@ async def get_all_chat_histories(user: dict = Depends(verify_token)):
         raise HTTPException(status_code=500, detail=f"獲取所有聊天記錄時出錯：{str(e)}")
 
 # Admin API：取得所有使用者資料
-@app.get("/api/admin/users")
+@app.get("/admin/users")
 async def get_all_users(user: dict = Depends(verify_token)):
     await check_admin_permission(user)
     try:
@@ -749,7 +747,7 @@ async def get_all_users(user: dict = Depends(verify_token)):
         raise HTTPException(status_code=500, detail=f"獲取所有使用者資料時出錯：{str(e)}")
 
 # Admin API：設定其他使用者的角色
-@app.put("/api/admin/users/{target_uid}/role")
+@app.put("/admin/users/{target_uid}/role")
 async def set_user_role_by_admin(
     target_uid: str,
     request: RoleRequest,
