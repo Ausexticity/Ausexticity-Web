@@ -9,17 +9,15 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import logging
 from openai import OpenAI  # 新用法
-from google.oauth2 import service_account
 
 # 從環境變數獲取並解析 Google 憑證
 credentials_dict = json.loads(os.getenv('GOOGLE_CREDENTIALS2'))
-credentials = service_account.Credentials.from_service_account_info(credentials_dict)
 
 # 初始化 Vertex AI
-vertexai.init(project="eros-ai-446307", location="us-central1", credentials=credentials)
+vertexai.init(project="eros-ai-446307", location="us-central1", credentials=credentials_dict)
 
 # 初始化翻譯客戶端
-translate_client = translate.Client(credentials=credentials)
+translate_client = translate.Client(credentials=credentials_dict)
 
 # 初始化 ThreadPoolExecutor
 executor = ThreadPoolExecutor(max_workers=4)  # 從 10 降到 4
