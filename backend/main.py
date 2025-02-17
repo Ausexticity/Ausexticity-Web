@@ -39,6 +39,7 @@ origins = [
     # "http://localhost:5500",   # 新增：本地開發伺服器
     # "https://ausexticity-frontend.onrender.com",  # 前端生產環境
     "https://www.ausexticity.com",
+    "https://ausexticity.com/",
 ]
 
 app.add_middleware(

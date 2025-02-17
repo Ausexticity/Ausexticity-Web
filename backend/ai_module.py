@@ -10,14 +10,12 @@ from concurrent.futures import ThreadPoolExecutor
 import logging
 from openai import OpenAI  # 新用法
 
-# 從環境變數獲取並解析 Google 憑證
-credentials_dict = json.loads(os.getenv('GOOGLE_CREDENTIALS2'))
 
 # 初始化 Vertex AI
-vertexai.init(project="eros-ai-446307", location="us-central1", credentials=credentials_dict)
+vertexai.init(project="eros-ai-446307", location="us-central1")
 
 # 初始化翻譯客戶端
-translate_client = translate.Client(credentials=credentials_dict)
+translate_client = translate.Client()
 
 # 初始化 ThreadPoolExecutor
 executor = ThreadPoolExecutor(max_workers=4)  # 從 10 降到 4
