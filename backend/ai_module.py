@@ -9,13 +9,24 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import logging
 from openai import OpenAI  # 新用法
+from google.oauth2 import service_account
 
+# 載入環境變數
+load_dotenv()
 
-# 初始化 Vertex AI
-vertexai.init(project="eros-ai-446307", location="us-central1")
+# 從環境變數取得 Google 憑證並創建憑證物件
+cred_dict = json.loads(os.getenv('GOOGLE_CREDENTIALS2'))
+credentials = service_account.Credentials.from_service_account_info(cred_dict)
+
+# 初始化 Vertex AI，使用憑證物件
+vertexai.init(
+    project="eros-ai-446307",
+    location="us-central1",
+    credentials=credentials
+)
 
 # 初始化翻譯客戶端
-translate_client = translate.Client()
+translate_client = translate.Client(credentials=credentials)
 
 # 初始化 ThreadPoolExecutor
 executor = ThreadPoolExecutor(max_workers=4)  # 從 10 降到 4
@@ -83,7 +94,10 @@ def retrieve_similar_documents_sync(query_embedding, dataset_id, table_id, proje
     Returns:
         list: 相似文檔的列表。
     """
-    client_bq = bigquery.Client(project=project_id)
+    client_bq = bigquery.Client(
+        project=project_id,
+        credentials=credentials
+    )
     embedding_str = ", ".join(map(str, query_embedding))
     query = f"""
     WITH query AS (

@@ -4,7 +4,13 @@ import { auth, isLoggedIn, logout } from './auth.js';
 // 定義 LocalStorage 鍵名
 const ARTICLES_KEY = 'articles';
 const ARTICLES_TIMESTAMP_KEY = 'articles_timestamp';
+const USER_AVATAR_KEY = 'user_avatar';
+const USER_AVATAR_TIMESTAMP_KEY = 'user_avatar_timestamp';
+const USER_ROLE_KEY = 'user_role';
+const USER_ROLE_TIMESTAMP_KEY = 'user_role_timestamp';
 const CACHE_DURATION = 60 * 60 * 1000; // 1 小時
+// 定義頭像和角色的快取時間（30分鐘）
+const USER_INFO_CACHE_DURATION = 30 * 60 * 1000;
 
 // 定義滾動條狀態的 LocalStorage 鍵名前綴
 const SCROLL_STATE_PREFIX = 'scroll_state_';
@@ -23,8 +29,28 @@ async function updateHeader() {
         userIcon.style.display = userIsLoggedIn ? 'block' : 'none';
 
         if (userIsLoggedIn) {
-            // 載入用戶頭像
-            await loadUserAvatar();
+            // 檢查頭像快取
+            const now = Date.now();
+            const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
+            const avatarTimestamp = localStorage.getItem(USER_AVATAR_TIMESTAMP_KEY);
+
+            let userAvatar = null;
+            if (cachedAvatar && avatarTimestamp && (now - avatarTimestamp < USER_INFO_CACHE_DURATION)) {
+                userAvatar = cachedAvatar;
+            } else {
+                // 如果快取不存在或已過期，重新獲取頭像
+                const avatarData = await getUserAvatar();
+                userAvatar = avatarData.avatar;
+                if (userAvatar) {
+                    localStorage.setItem(USER_AVATAR_KEY, userAvatar);
+                    localStorage.setItem(USER_AVATAR_TIMESTAMP_KEY, now.toString());
+                }
+            }
+
+            // 更新頭像
+            if (userAvatar) {
+                userIcon.src = userAvatar;
+            }
 
             // 移除舊的事件監聽器
             const oldUserIcon = userIcon.cloneNode(true);
@@ -32,8 +58,24 @@ async function updateHeader() {
                 userIcon.parentNode.replaceChild(oldUserIcon, userIcon);
             }
 
-            // 檢查是否為管理員
-            if (await getUserRole() === 'admin' && adminMenuItem) {
+            // 檢查角色快取
+            const cachedRole = localStorage.getItem(USER_ROLE_KEY);
+            const roleTimestamp = localStorage.getItem(USER_ROLE_TIMESTAMP_KEY);
+
+            let userRole = null;
+            if (cachedRole && roleTimestamp && (now - roleTimestamp < USER_INFO_CACHE_DURATION)) {
+                userRole = cachedRole;
+            } else {
+                // 如果快取不存在或已過期，重新獲取角色
+                userRole = await getUserRole();
+                if (userRole) {
+                    localStorage.setItem(USER_ROLE_KEY, userRole);
+                    localStorage.setItem(USER_ROLE_TIMESTAMP_KEY, now.toString());
+                }
+            }
+
+            // 根據角色顯示管理員選項
+            if (userRole === 'admin' && adminMenuItem) {
                 adminMenuItem.style.display = 'block';
             }
 
@@ -56,6 +98,11 @@ async function updateHeader() {
                     e.preventDefault();
                     const shouldLogout = confirm('是否要登出？');
                     if (shouldLogout) {
+                        // 清除快取
+                        localStorage.removeItem(USER_AVATAR_KEY);
+                        localStorage.removeItem(USER_AVATAR_TIMESTAMP_KEY);
+                        localStorage.removeItem(USER_ROLE_KEY);
+                        localStorage.removeItem(USER_ROLE_TIMESTAMP_KEY);
                         await logout();
                         window.location.reload();
                     }

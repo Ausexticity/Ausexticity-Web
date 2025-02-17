@@ -3413,3 +3413,28 @@ header .nav-search-input.expanded {
   justify-content: center;
   align-items: center;
 }
+
+/* 添加載入動畫 */
+.loading-spinner-bot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #954527;
+}
+
+.loading-spinner-bot::after {
+  content: "";
+  width: 30px;
+  height: 30px;
+  border: 3px solid #F1E3CB;
+  border-top-color: #954527;
+  border-radius: 50%;
+  animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}

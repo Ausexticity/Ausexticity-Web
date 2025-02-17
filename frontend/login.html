@@ -90,7 +90,6 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             await initializeLoading();
-            showLoading();
             try {
                 // 檢查使用者是否已登入
                 const userIsLoggedIn = await isLoggedIn();
@@ -100,8 +99,6 @@
                 }
             } catch (error) {
                 console.error('初始化頁面時發生錯誤:', error);
-            } finally {
-                hideLoading();
             }
 
             const loginBtn = document.getElementById('login-btn');

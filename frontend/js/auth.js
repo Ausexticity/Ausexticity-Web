@@ -282,18 +282,39 @@ async function sendChatRequest(query, context = []) {
 }
 
 async function isLoggedIn() {
-    // 等待 Firebase 初始化完成
-    if (!auth.currentUser) {
-        // 等待一小段時間確保 Firebase 完全初始化
-        await new Promise(resolve => {
-            const unsubscribe = onAuthStateChanged(auth, (user) => {
-                unsubscribe(); // 取消監聽
-                resolve(user);
-            });
-        });
-    }
+    try {
+        // 等待 Firebase 初始化完成
+        if (!auth.currentUser) {
+            await new Promise((resolve) => {
+                const unsubscribe = onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        // 確保 token 是最新的
+                        user.getIdToken(true).then(newToken => {
+                            localStorage.setItem('idToken', newToken);
+                            unsubscribe();
+                            resolve();
+                        });
+                    } else {
+                        localStorage.removeItem('idToken');
+                        unsubscribe();
+                        resolve();
+                    }
+                });
 
-    return !!auth.currentUser && !!localStorage.getItem('idToken');
+                // 設置超時，避免無限等待
+                setTimeout(() => {
+                    unsubscribe();
+                    resolve();
+                }, 3000);
+            });
+        }
+
+        // 再次檢查用戶狀態和 token
+        return !!auth.currentUser && !!localStorage.getItem('idToken');
+    } catch (error) {
+        console.error('檢查登入狀態時發生錯誤:', error);
+        return false;
+    }
 }
 
 // 在頁面載入時檢查是否有一次性登入連結

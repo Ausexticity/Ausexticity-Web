@@ -30,17 +30,25 @@ import aiohttp
 app = FastAPI()
 logger = logging.getLogger('uvicorn.error')
 
+# 載入環境變數
+load_dotenv()
 
 # 設定 CORS 允許的來源
-origins = [
-    # "http://127.0.0.1:5500",  # 前端開發伺服器
-    # "http://127.0.0.1:5173",  # 前端開發伺服器
-    # "http://localhost:5173",   # 新增：本地開發伺服器
-    # "http://localhost:5500",   # 新增：本地開發伺服器
-    # "https://ausexticity-frontend.onrender.com",  # 前端生產環境
-    "https://www.ausexticity.com",
-    "https://ausexticity.com/",
+dev_origins = [
+    "http://127.0.0.1:5500",  # 前端開發伺服器
+    "http://127.0.0.1:5173",  # 前端開發伺服器
+    "http://localhost:5173",   # 本地開發伺服器
+    "http://localhost:5500",   # 本地開發伺服器
 ]
+
+prod_origins = [
+    "https://www.ausexticity.com",
+    "https://ausexticity.com",
+]
+
+# 根據環境變數決定使用哪個 origins 列表
+is_development = os.getenv('ENVIRONMENT', 'production').lower() == 'development'
+origins = dev_origins + prod_origins if is_development else prod_origins
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,7 +62,7 @@ app.add_middleware(
 cred_dict = json.loads(os.getenv('GOOGLE_CREDENTIALS'))
 cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred, {
-    'storageBucket': 'eros-web-94e22.firebasestorage.app'  # 移除了 'gs://'
+    'storageBucket': 'eros-web-94e22.firebasestorage.app'
 })
 
 # 初始化 Firestore 客戶端

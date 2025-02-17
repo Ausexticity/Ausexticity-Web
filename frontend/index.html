@@ -166,33 +166,10 @@
 
             try {
                 // 先等待 Firebase 初始化完成
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 300));
 
                 // 更新頁面頂部（包含載入用戶頭像和檢查管理員權限）
                 await updateHeader();
-
-                // 檢查使用者是否已登入
-                const userIsLoggedIn = await isLoggedIn();
-
-                // 根據登入狀態更新聊天機器人界面
-                if (userIsLoggedIn) {
-                    chatContainer.innerHTML = `
-                        <div class="chat-wrapper">
-                            <iframe src="/chat" class="chat-iframe" frameborder="0"></iframe>
-                            <button onclick="window.location.href='/chat'" title="全螢幕" class="chat-fullscreen-btn">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                        </div>
-                    `;
-                } else {
-                    chatContainer.innerHTML = `
-                        <div class="chat-login-container">
-                            <img src="images/chat_screen.jpg" alt="Login Required" class="chat-login-img">
-                            <h3 class="chat-login-title">請先登入以使用 Chatbot</h3>
-                            <a href="login.html" class="chat-login-btn">立即登入</a>
-                        </div>
-                    `;
-                }
 
                 // 獲取文章資料
                 const articles = await fetchArticles();
@@ -287,6 +264,39 @@
 
                         doctorList.appendChild(articleElement);
                     });
+                }
+
+                hideLoading()
+
+                chatContainer.innerHTML = `
+                        <div class="chat-wrapper">
+                            <div class="loading-spinner-bot">
+                        </div>
+                    `;
+
+                await new Promise(resolve => setTimeout(resolve, 600));
+
+                // 檢查使用者是否已登入
+                const userIsLoggedIn = await isLoggedIn();
+
+                // 根據登入狀態更新聊天機器人界面
+                if (userIsLoggedIn) {
+                    chatContainer.innerHTML = `
+                        <div class="chat-wrapper">
+                            <iframe src="/chat" class="chat-iframe" frameborder="0"></iframe>
+                            <button onclick="window.location.href='/chat'" title="全螢幕" class="chat-fullscreen-btn">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    chatContainer.innerHTML = `
+                        <div class="chat-login-container">
+                            <img src="images/chat_screen.jpg" alt="Login Required" class="chat-login-img">
+                            <h3 class="chat-login-title">請先登入以使用 Chatbot</h3>
+                            <a href="login.html" class="chat-login-btn">立即登入</a>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('初始化頁面時發生錯誤:', error);
