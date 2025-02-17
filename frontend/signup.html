@@ -139,6 +139,8 @@
                             } finally {
                                 hideLoading();
                             }
+                        } else {
+                            hideLoading();
                         }
                     }).catch(error => {
                         console.error('註冊失敗:', error);
