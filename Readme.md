@@ -24,7 +24,7 @@ Ausexticity 是一個現代化的性知識文章分享、交流平台，整合�
   - Firestore (NoSQL 資料庫)
   - Firebase Storage (圖片儲存)
 - **AI 服務**：
-  - Anthropic Claude 3.5 API (對話系統)
+  - OpenRouter API (支援多種 AI 模型)
   - Google Cloud Platform
     - BigQuery (資料分析)
     - Vertex AI (機器學習)
@@ -48,12 +48,13 @@ Ausexticity 是一個現代化的性知識文章分享、交流平台，整合�
 
 ### 使用者相關
 ```
-POST /login                 - 使用者登入
-POST /signup               - 使用者註冊
+POST /login                 - 使用者登入（需要 Turnstile token）
+POST /signup               - 使用者註冊（需要 Turnstile token）
 GET  /user/role            - 獲取使用者角色
 POST /user/role            - 更新使用者角色
 GET  /user/avatar          - 獲取使用者頭像
 POST /user/avatar          - 更新使用者頭像
+POST /user/create          - 創建新使用者文件
 ```
 
 ### 文章相關
@@ -68,16 +69,23 @@ DELETE /delete_image       - 刪除圖片
 
 ### AI 對話相關
 ```
-GET  /chat                 - 獲取 AI 回應（SSE）
+GET  /chat                 - 獲取 AI 回應（SSE，支援 RAG 和網路搜尋）
 POST /chat/history         - 儲存對話記錄
 GET  /chat/history         - 獲取對話記錄
 DELETE /chat/history       - 刪除對話記錄
 ```
 
+### 管理員專用
+```
+GET  /admin/chat_histories - 獲取所有使用者的聊天記錄
+GET  /admin/users          - 獲取所有使用者資料
+PUT  /admin/users/{uid}/role - 設定指定使用者的角色
+```
+
 ## 部署指南
 
-### 後端部署 (Render)
-1. 在 Render 建立新的 Web Service
+### 後端部署 (Heroku)
+1. 在 Heroku 建立新的應用程式
 2. 連結 GitHub 儲存庫
 3. 設定環境變數：
    ```
@@ -86,14 +94,20 @@ DELETE /chat/history       - 刪除對話記錄
    GOOGLE_CREDENTIALS=your_credentials
    OPENROUTER_API_KEY=your_key
    ```
-4. 設定啟動命令：
-   ```bash
-   uvicorn main:app --host 0.0.0.0 --port $PORT
+4. 設定 Procfile：
+   ```
+   web: uvicorn main:app --host 0.0.0.0 --port $PORT
    ```
 
-### 前端部署 (Firebase Hosting)
-+ 需設定 Firebase authentication 、 storage 、 firestore
-+ 並部屬至靜態網頁託管平台
+### 前端部署 (Cloudflare Pages)
+> 需先設定 Firebase authentication 、 storage 、 firestore ，
+> 並更新 `frontend/js/auth.js` 的 `firebaseConfig`
+1. 在 Cloudflare Pages 建立新專案
+2. 連結 GitHub 儲存庫
+3. 設定建置配置：
+   - 建置命令：不需要（靜態網站）
+   - 輸出目錄：`frontend`
+4. 部署完成後可在 Pages 儀表板查看狀態
 
 ### 域名設定
 1. 在 Cloudflare 設定 DNS 記錄
